@@ -1,4 +1,1 @@
-class HTTPException:
-    def __init__(self, status, data):
-        self.status = status
-        self.data = data
+__version__ = '0.0.1'
