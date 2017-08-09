@@ -1,13 +1,14 @@
-import cgi
 import abc
 import json
 import logging
 
-
-from . import HTTPException
+from . import utils
 
 LOG = logging.getLogger(__name__)
-ROOT_URL = 'https://slack.com/api/'
+
+ITER_MAPPING = {
+    'users.list': 'members'
+}
 
 
 class SlackAPI(abc.ABC):
@@ -20,31 +21,63 @@ class SlackAPI(abc.ABC):
 
         return '', {}, b''
 
-    def _pre_request(self, url, data):
+    def _pre_request(self, url, data, limit=None, cursor=None, iterkey=None):
         """Prepare the request"""
+
         headers = {}
-        data['token'] = self._token
-        return ROOT_URL + url, headers, data
+
+        if data:
+            data['token'] = self._token
+        else:
+            data = {'token': self._token}
+
+        if limit:
+            data['limit'] = limit
+
+            if cursor:
+                data['cursor'] = cursor
+
+        iterkey = iterkey or ITER_MAPPING.get(url)
+
+        if url.startswith('https://hooks.slack.com'):
+            body = json.dumps(data)
+        elif not url.startswith(utils.ROOT_URL):
+            body = data
+            url = utils.ROOT_URL + url
+        else:
+            body = data
+
+        return url, headers, body, iterkey
 
     def _post_request(self, status, headers, body):
         """Handle the request reponse"""
 
-        content_type = headers.get('content-type')
-        type_, parameters = cgi.parse_header(content_type)
-        decoded_body = body.decode('utf-8')
-        if type_ == 'application/json':
-            data = json.loads(decoded_body)
-        else:
-            data = decoded_body
+        data = utils.decode_body(headers, body)
+        utils.raise_for_status(status, data)
+        utils.raise_for_api_error(data)
 
-        if status != 200:
-            raise HTTPException(status, data)
+        if 'response_metadata' in data:
+            cursor = data['response_metadata'].get('next_cursor')
         else:
-            return data
+            cursor = None
+
+        return data, cursor
 
     def post(self, url, data=None):
-        data = data or {}
-        url, headers, body = self._pre_request(url, data)
+
+        url, headers, body, *_ = self._pre_request(url, data)
         status, headers, body = self._request('POST', url, headers, body)
-        data = self._post_request(status, headers, body)
+        data, *_ = self._post_request(status, headers, body)
         return data
+
+    def postiter(self, url, data=None, limit=10, iterkey=None, cursor=None):
+
+        url, headers, body, iterkey = self._pre_request(url, data, limit, cursor, iterkey)
+        status, headers, body = self._request('POST', url, headers, body)
+        response_data, cursor = self._post_request(status, headers, body)
+
+        for item in response_data[iterkey]:
+            yield item
+
+        if cursor:
+            yield from self.postiter(url, data, limit, iterkey, cursor)
