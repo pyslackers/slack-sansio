@@ -50,7 +50,7 @@ class SlackAPI(abc.ABC):
         return url, headers, body, iterkey
 
     def _post_request(self, status, headers, body):
-        """Handle the request reponse"""
+        """Handle the request response"""
 
         data = utils.decode_body(headers, body)
         utils.raise_for_status(status, data)
@@ -63,6 +63,7 @@ class SlackAPI(abc.ABC):
 
         return data, cursor
 
+    @abc.abstractmethod
     def post(self, url, data=None):
 
         url, headers, body, *_ = self._pre_request(url, data)
@@ -70,9 +71,11 @@ class SlackAPI(abc.ABC):
         data, *_ = self._post_request(status, headers, body)
         return data
 
-    def postiter(self, url, data=None, limit=10, iterkey=None, cursor=None):
+    @abc.abstractmethod
+    def postiter(self, url, data=None, limit=200, iterkey=None, cursor=None):
 
-        url, headers, body, iterkey = self._pre_request(url, data, limit, cursor, iterkey)
+        url, headers, body, iterkey = self._pre_request(
+            url, data, limit, cursor, iterkey)
         status, headers, body = self._request('POST', url, headers, body)
         response_data, cursor = self._post_request(status, headers, body)
 
