@@ -1,8 +1,6 @@
 import abc
 import json
-import time
 import logging
-import websocket
 
 from .. import utils
 
@@ -89,13 +87,4 @@ class SlackAPI(abc.ABC):
 
     @abc.abstractmethod
     def rtm(self):
-
-        data = self.post('rtm.connect')
-        ws = websocket.create_connection(data['url'])
-
-        while True:
-            msg = ws.recv()
-            if msg:
-                yield utils.parse_from_rtm(msg)
-            else:
-                time.sleep(0.1)
+        pass

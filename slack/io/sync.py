@@ -1,6 +1,9 @@
+import time
 import requests
+import websocket
 
 from . import abc
+from .. import utils
 
 
 class SlackAPI(abc.SlackAPI):
@@ -17,4 +20,13 @@ class SlackAPI(abc.SlackAPI):
         yield from super().postiter(*args, **kwargs)
 
     def rtm(self):
-        yield from super().rtm()
+
+        data = self.post('rtm.connect')
+        ws = websocket.create_connection(data['url'])
+
+        while True:
+            msg = ws.recv()
+            if msg:
+                yield utils.parse_from_rtm(msg)
+            else:
+                time.sleep(0.1)
