@@ -56,3 +56,7 @@ def parse_content_type(headers):
         type_, parameters = cgi.parse_header(content_type)
         encoding = parameters.get("charset", "utf-8")
         return type_, encoding
+
+
+def parse_from_rtm(data):
+    return json.loads(data)

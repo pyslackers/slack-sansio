@@ -1,4 +1,7 @@
 from . import abc
+from .. import utils
+
+import aiohttp
 
 
 class SlackAPI(abc.SlackAPI):
@@ -19,7 +22,7 @@ class SlackAPI(abc.SlackAPI):
         data, *_ = self._post_request(status, headers, body)
         return data
 
-    async def postiter(self, url, data=None, limit=10, iterkey=None,
+    async def postiter(self, url, data=None, limit=200, iterkey=None,
                        cursor=None):
 
         url, headers, body, iterkey = self._pre_request(
@@ -33,3 +36,15 @@ class SlackAPI(abc.SlackAPI):
         if cursor:
             async for item in self.postiter(url, data, limit, iterkey, cursor):
                 yield item
+
+    async def rtm(self):
+
+        data = await self.post('rtm.connect')
+        async with self._session.ws_connect(data['url']) as ws:
+            async for data in ws:
+                if data.type == aiohttp.WSMsgType.TEXT:
+                    yield utils.parse_from_rtm(data.data)
+                elif data.type == aiohttp.WSMsgType.CLOSED:
+                    break
+                elif data.type == aiohttp.WSMsgType.ERROR:
+                    break

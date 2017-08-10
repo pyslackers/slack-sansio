@@ -7,7 +7,7 @@ requires = {
     'install': [],
     'setup': [],
     'tests': ['flake8'],
-    'sync': ['requests'],
+    'sync': ['requests', 'websocket-client'],
     'aiohttp': ['aiohttp']
 }
 

@@ -15,3 +15,6 @@ class SlackAPI(abc.SlackAPI):
 
     def postiter(self, *args, **kwargs):
         yield from super().postiter(*args, **kwargs)
+
+    def rtm(self):
+        yield from super().rtm()
