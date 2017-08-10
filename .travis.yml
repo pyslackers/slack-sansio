@@ -1,0 +1,32 @@
+language: python
+
+matrix:
+  fast_finish: true
+  allow_failures:
+    - nightly
+    - 3.7-dev
+    - 3.6-dev
+
+python:
+  - '3.5'
+  - '3.6'
+  - 3.6-dev
+  - 3.7-dev
+  - nightly
+
+script:
+  - python setup.py flake8
+  - python setup.py sdist
+  - python setup.py bdist_wheel
+
+deploy:
+  provider: pypi
+  distributions: sdist bdist_wheel
+  user: Ovv
+  password:
+    secure: HYmjj3Z4AwUq/mdCQZ5X63u65f0MYgp9jy1ucCK49ATcIxrjxANIWuaS+uYGv2rxNojxJElLv08/XCOu2ZFzcQisKfbuGecpb4soOEX1f8vK8eBsLpQNrL/Pd0Qp1g6LVVzO+Iz4J69TMOCAC5KKoidqql6NHb2Yg2ogysPZvDfxYoA/YkAY2H4lxBvFURsJeVxQyoHaVVnXV2c/88K4NjzSW7vHP9x6sHXmtKATZMmg5O2pOF+cXrolh7/1yQOEA+GaS658+a2n3pj9fvixG8yQJYgVoro0y460M0izW9p00Sy/L4VniHqlIuE+Orltavq6yx4axG2qG63FDuUsbBmh/ceBU+IxjUoepOlsfWOY/omQauh/6dhZWF2RvgyTeN2HlsxDl9Uh2EGny2IXQ2J0oToQ30nfb7FuwqDfnO+Gz9wrWtTI4uP9QXKF9t4n/L6LGrMJG5aOJINOsM808iu7kfsqdkwLDuoIXBDQQfqxvjzN5Pc/LBerOGnux4WL9ffzS55LYhwcx8a2DrhqdQO9qGbtz+8yrq8MHCAvTe0DosG2uv+g7UvB1HVbaZPQqNEjoSm5BWL81pz8s3CO9+SZK6tN4m3bteedXwNA4WdwWv8WHNjC74bBEDWZgIFcyFdnx1YXN4Ep23HIGFHu7/1GcaYk2aSxJCbXX2g5kzQ=
+  on:
+    repo: pyslackers/slack-sansio
+    branch: master
+    python: '3.6'
+    tags: true

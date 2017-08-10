@@ -22,7 +22,8 @@ class SlackAPI(abc.SlackAPI):
     async def postiter(self, url, data=None, limit=10, iterkey=None,
                        cursor=None):
 
-        url, headers, body, iterkey = self._pre_request(url, data, limit, cursor, iterkey)
+        url, headers, body, iterkey = self._pre_request(
+            url, data, limit, cursor, iterkey)
         status, headers, body = await self._request('POST', url, headers, body)
         response_data, cursor = self._post_request(status, headers, body)
 
