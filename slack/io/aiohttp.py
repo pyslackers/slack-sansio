@@ -6,9 +6,6 @@ from . import abc
 
 class SlackAPI(abc.SlackAPI):
 
-    def __init__(self,  *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
     async def _request(self, method, url, headers, body):
         async with self._session.request(method, url, headers=headers,
                                          data=body) as response:
