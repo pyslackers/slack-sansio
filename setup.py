@@ -40,5 +40,5 @@ setuptools.setup(
     author_email='contact@ovv.wtf',
     license='MIT',
     url='https://github.com/pyslackers/slack-sansio',
-    version='0.0.3',
+    version='0.1.0',
 )
