@@ -2,27 +2,11 @@ import cgi
 import json
 import logging
 
-from . import exceptions
-from . import events
+from . import exceptions, events, methods, ROOT_URL
 
 LOG = logging.getLogger(__name__)
-ROOT_URL = 'https://slack.com/api/'
 RECONNECT_EVENTS = ('team_migration_started', 'goodbye')
 SKIP_EVENTS = ('reconnect_url', )
-ITER_MAPPING = {
-    'users.list': ('cursor', 'members'),
-    'channels.list': ('cursor', 'channels'),
-    'files.list': ('page', 'files'),
-    'reactions.list': ('page', 'items'),
-    'search.all': ('page', 'messages'),
-    'search.files': ('page', 'files'),
-    'search.messages': ('page', 'messages'),
-    'starts.list': ('page', 'items'),
-    'channels.history': ('timeline', 'messages'),
-    'groups.history': ('timeline', 'messages'),
-    'im.history': ('timeline', 'messages'),
-    'mpim.history': ('timeline', 'messages'),
-}
 
 
 def raise_for_status(status, headers, data):
@@ -69,6 +53,14 @@ def parse_content_type(headers):
 def prepare_request(url, data, headers, global_headers, token):
     """Prepare the request"""
 
+    if isinstance(data, events.Message):
+        data = data.serialize()
+
+    if isinstance(url, methods):
+        url = url.value[0]
+    elif not url.startswith(ROOT_URL):
+        url = ROOT_URL + url
+
     if not headers:
         headers = {**global_headers}
     else:
@@ -84,9 +76,6 @@ def prepare_request(url, data, headers, global_headers, token):
     else:
         body = data
 
-    if not url.startswith(ROOT_URL):
-        url = ROOT_URL + url
-
     return url, body, headers
 
 
@@ -100,18 +89,22 @@ def decode_request(status, headers, body):
     return data
 
 
-def find_iteration(url, iterkey, itermode):
-    if iterkey and itermode:
-        return itermode, iterkey
-    else:
-        try:
-            return ITER_MAPPING.get(url)
-        except KeyError:
-            return None, None
+def find_iteration(url, itermode, iterkey):
+
+    if isinstance(url, methods):
+        if not itermode:
+            itermode = url.value[1]
+        if not iterkey:
+            iterkey = url.value[2]
+
+    if not iterkey or not itermode:
+        raise ValueError('Iteration not supported for: {}'.format(url))
+
+    return itermode, iterkey
 
 
 def prepare_iter_request(url, data, *, iterkey=None, itermode=None, limit=200, itervalue=None):
-    itermode, iterkey = find_iteration(url, iterkey, itermode)
+    itermode, iterkey = find_iteration(url, itermode, iterkey)
 
     if not data:
         data = {}

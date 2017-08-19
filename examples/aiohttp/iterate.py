@@ -4,6 +4,7 @@ import pprint
 import asyncio
 import aiohttp
 import logging
+import slack
 
 from slack.io.aiohttp import SlackAPI
 
@@ -13,7 +14,7 @@ LOG = logging.getLogger(__name__)
 
 async def iterate(client):
 
-    async for channel in client.iter('channels.list', limit=4):
+    async for channel in client.iter(slack.methods.CHANNELS_LIST, limit=4):
         pprint.pprint(channel)
 
 if __name__ == '__main__':

@@ -4,8 +4,7 @@ import logging
 import websocket
 
 from . import abc
-from .. import sansio, exceptions
-from ..events import Event, Message
+from .. import sansio, exceptions, events, methods
 
 LOG = logging.getLogger(__name__)
 
@@ -52,10 +51,6 @@ class SlackAPI(abc.SlackAPI):
             return response_data
 
     def query(self, url, data=None, headers=None):
-
-        if isinstance(data, Message):
-            data = data.serialize()
-
         return self._make_query(url, data, headers)
 
     def iter(self, url, data=None, headers=None, *, limit=200, iterkey=None, itermode=None, itervalue=None):
@@ -74,15 +69,15 @@ class SlackAPI(abc.SlackAPI):
 
         while True:
             if not bot_id:
-                auth = self.query('auth.test')
-                user_info = self.query('users.info', {'user': auth['user_id']})
+                auth = self.query(methods.AUTH_TEST)
+                user_info = self.query(methods.USERS_INFO, {'user': auth['user_id']})
                 bot_id = user_info['user']['profile']['bot_id']
                 LOG.info('BOT_ID is %s', bot_id)
             if not url:
-                url = (self.query('rtm.connect'))['url']
+                url = (self.query(methods.RTM_CONNECT))['url']
 
             for data in self._rtm(url):
-                event = Event.from_rtm(json.loads(data))
+                event = events.Event.from_rtm(json.loads(data))
                 if sansio.need_reconnect(event):
                     break
                 elif sansio.discard_event(event, bot_id):

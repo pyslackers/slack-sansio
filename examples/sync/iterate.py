@@ -3,6 +3,7 @@ import sys
 import pprint
 import logging
 import requests
+import slack
 
 from slack.io.sync import SlackAPI
 
@@ -12,7 +13,7 @@ LOG = logging.getLogger(__name__)
 
 def iterate(client):
 
-    for channel in client.iter('channels.list', limit=2):
+    for channel in client.iter(slack.methods.CHANNELS_LIST, limit=2):
         pprint.pprint(channel)
 
 
