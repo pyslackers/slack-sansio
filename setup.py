@@ -7,9 +7,14 @@ requires = {
     'install': [],
     'setup': [],
     'tests': ['flake8'],
-    'sync': ['requests', 'websocket-client'],
+    'full': set(),
+    'dev': {'tox'},
+    'requests': ['requests', 'websocket-client'],
     'aiohttp': ['aiohttp']
 }
+
+requires['dev'].update(*requires.values())
+requires['full'].update(requires['requests'], requires['aiohttp'])
 
 setuptools.setup(
     name='slack-sansio',
