@@ -9,18 +9,29 @@ LOG = logging.getLogger(__name__)
 
 
 class SlackAPI(abc.ABC):
+    """
+    :py:term:`abstract base class` abstracting the HTTP library used to call Slack API.
 
-    def __init__(self, *, session, token, raise_on_rate_limit=False, headers=None):
+    Args:
+        session: HTTP session
+        token: Slack API token
+        retry_when_rate_limit: Retry or raise an exception when rate limited
+        headers: Default headers for all request
+
+    Attributes:
+        rate_limited: If rate limited timestamp when rate limit stop
+
+    """
+    def __init__(self, *, session, token, retry_when_rate_limit=True, headers=None):
         self._session = session
         self._token = token
         self._headers = headers or {}
-        self._raise_on_rate_limit = raise_on_rate_limit
-        self._rate_limited = False
+        self._retry_when_rate_limit = retry_when_rate_limit
+
+        self.rate_limited = False
 
     @abc.abstractmethod
     async def _request(self, method, url, headers, body):
-        """Make the http request"""
-
         return '', {}, b''
 
     @abc.abstractmethod
@@ -33,7 +44,7 @@ class SlackAPI(abc.ABC):
 
     async def _make_query(self, url, data=None, headers=None):
 
-        while self._rate_limited and self._rate_limited > int(time.time()):
+        while self.rate_limited and self.rate_limited > int(time.time()):
             await self.sleep(1)
 
         try:
@@ -42,20 +53,49 @@ class SlackAPI(abc.ABC):
             status, body, headers = await self._request('POST', url, headers, body)
             response_data = sansio.decode_request(status, headers, body)
         except exceptions.RateLimited as rate_limited:
-            if self._raise_on_rate_limit:
+            if self._retry_when_rate_limit:
                 raise
             else:
                 LOG.warning('Rate limited ! Waiting for %s seconds', rate_limited.retry_after)
-                self._rate_limited = int(time.time()) + rate_limited.retry_after
+                self.rate_limited = int(time.time()) + rate_limited.retry_after
                 return await self._make_query(url, data, headers)
         else:
-            self._rate_limited = False
+            self.rate_limited = False
             return response_data
 
     async def query(self, url, data=None, headers=None):
+        """
+        Query the slack API
+
+        Args:
+            url: :class:`slack.methods` or url string
+            data: JSON encodable MutableMapping
+            headers: Custom headers
+
+        Returns:
+            dictionary of slack API response data
+
+        """
+
         return await self._make_query(url, data, headers)
 
-    async def iter(self, url, data=None, headers=None, *, limit=200, iterkey=None, itermode=None, itervalue=None):
+    async def iter(self, url, data=None, headers=None, *, limit=200, iterkey=None, itermode=None):
+        """
+        Iterate over a slack API method supporting pagination
+
+        Args:
+            url: :class:`slack.methods` or url string
+            data: JSON encodable MutableMapping
+            headers:
+            limit: Maximum number of results to return per call.
+            iterkey: Key in response data to iterate over (required for url string).
+            itermode: Iteration mode (required for url string) (one of `cursor`, `page` or `timeline`)
+
+        Returns:
+            Async iterator over `response_data[key]`
+
+        """
+        itervalue = None
         while True:
             data, iterkey, itermode = sansio.prepare_iter_request(url, data, iterkey=iterkey, itermode=itermode,
                                                                   limit=limit, itervalue=itervalue)
@@ -68,6 +108,17 @@ class SlackAPI(abc.ABC):
                 break
 
     async def rtm(self, url=None, bot_id=None):
+        """
+        Iterate over event from the RTM API
+
+        Args:
+            url: Websocket connection url
+            bot_id: Connecting bot ID
+
+        Returns:
+            :class:`slack.events.Event` or :class:`slack.events.Message`
+
+        """
         while True:
             if not bot_id:
                 auth = await self.query(methods.AUTH_TEST)

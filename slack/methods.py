@@ -4,7 +4,11 @@ ROOT_URL = 'https://slack.com/api/'
 
 
 class Methods(Enum):
+    """
+    Enumeration of available slack methods.
 
+    Provides `iterkey` and `itermod` for :func:`SlackAPI.iter() <slack.io.abc.SlackAPI.iter>`.
+    """
     # api
     API_TEST = (ROOT_URL + 'api.test', None, None)
 

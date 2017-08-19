@@ -8,13 +8,23 @@ requires = {
     'setup': [],
     'tests': ['flake8'],
     'full': set(),
-    'dev': {'tox'},
+    'dev': {'tox', 'sphinx', 'sphinxcontrib-asyncio', 'sphinxcontrib-napoleon'},
     'requests': ['requests', 'websocket-client'],
     'aiohttp': ['aiohttp']
 }
 
 requires['dev'].update(*requires.values())
 requires['full'].update(requires['requests'], requires['aiohttp'])
+
+
+def find_version():
+    with open("slack/__version__.py") as f:
+        version = f.readlines()[-1].split('=')[-1].strip().strip("'").strip('"')
+        if not version:
+            raise RuntimeError('No version found')
+
+    return version
+
 
 setuptools.setup(
     name='slack-sansio',
@@ -33,17 +43,17 @@ setuptools.setup(
     setup_requires=requires['setup'],
     tests_require=requires['tests'],
     extras_require=requires,
+    python_requires='>=3.6',
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3 :: Only',
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
     author='Ovv',
     author_email='contact@ovv.wtf',
     license='MIT',
     url='https://github.com/pyslackers/slack-sansio',
-    version='0.1.0',
+    version=find_version(),
 )

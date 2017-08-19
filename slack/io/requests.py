@@ -10,7 +10,9 @@ LOG = logging.getLogger(__name__)
 
 
 class SlackAPI(abc.SlackAPI):
-
+    """
+    `requests` implementation of :class:`slack.io.abc.SlackAPI`
+    """
     def _request(self, method, url, headers, body):
 
         response = self._session.request(method, url, headers=headers, data=body)
@@ -40,7 +42,7 @@ class SlackAPI(abc.SlackAPI):
             status, body, headers = self._request('POST', url, headers, body)
             response_data = sansio.decode_request(status, headers, body)
         except exceptions.RateLimited as rate_limited:
-            if self._raise_on_rate_limit:
+            if self._retry_when_rate_limit:
                 raise
             else:
                 LOG.warning('Rate limited ! Waiting for %s seconds', rate_limited.retry_after)
@@ -51,9 +53,37 @@ class SlackAPI(abc.SlackAPI):
             return response_data
 
     def query(self, url, data=None, headers=None):
+        """
+        Query the slack API
+
+        Args:
+            url: :class:`slack.methods` or url string
+            data: JSON encodable MutableMapping
+            headers: Custom headers
+
+        Returns:
+            dictionary of slack API response data
+
+        """
         return self._make_query(url, data, headers)
 
-    def iter(self, url, data=None, headers=None, *, limit=200, iterkey=None, itermode=None, itervalue=None):
+    def iter(self, url, data=None, headers=None, *, limit=200, iterkey=None, itermode=None):
+        """
+        Iterate over a slack API method supporting pagination
+
+        Args:
+            url: :class:`slack.methods` or url string
+            data: JSON encodable MutableMapping
+            headers:
+            limit: Maximum number of results to return per call.
+            iterkey: Key in response data to iterate over (required for url string).
+            itermode: Iteration mode (required for url string) (one of `cursor`, `page` or `timeline`)
+
+        Returns:
+            Async iterator over `response_data[key]`
+
+        """
+        itervalue = None
         while True:
             data, iterkey, itermode = sansio.prepare_iter_request(url, data, iterkey=iterkey, itermode=itermode,
                                                                   limit=limit, itervalue=itervalue)
@@ -66,7 +96,17 @@ class SlackAPI(abc.SlackAPI):
                 break
 
     def rtm(self, url=None, bot_id=None):
+        """
+        Iterate over event from the RTM API
 
+        Args:
+            url: Websocket connection url
+            bot_id: Connecting bot ID
+
+        Returns:
+            :class:`slack.events.Event` or :class:`slack.events.Message`
+
+        """
         while True:
             if not bot_id:
                 auth = self.query(methods.AUTH_TEST)
