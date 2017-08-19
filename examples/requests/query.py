@@ -5,7 +5,7 @@ import logging
 import requests
 import slack
 
-from slack.io.sync import SlackAPI
+from slack.io.requests import SlackAPI
 
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger(__name__)

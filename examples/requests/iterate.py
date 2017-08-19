@@ -5,26 +5,17 @@ import logging
 import requests
 import slack
 
-from slack.io.sync import SlackAPI
-from slack.events import Message
+from slack.io.requests import SlackAPI
 
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger(__name__)
 
 
-def rtm(client):
+def iterate(client):
 
-    for event in client.rtm():
-        pprint.pprint(event)
+    for channel in client.iter(slack.methods.CHANNELS_LIST, limit=2):
+        pprint.pprint(channel)
 
-        if isinstance(event, Message):
-            respond_to_message(event, client)
-
-
-def respond_to_message(message, client):
-    response = message.response()
-    response['text'] = 'Hello world !'
-    client.query(slack.methods.CHAT_POST_MESSAGE, data=response.serialize())
 
 if __name__ == '__main__':
 
@@ -38,4 +29,4 @@ if __name__ == '__main__':
 
     session = requests.session()
     slack_client = SlackAPI(token=TOKEN, session=session)
-    rtm(slack_client)
+    iterate(slack_client)
