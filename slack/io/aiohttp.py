@@ -5,7 +5,9 @@ from . import abc
 
 
 class SlackAPI(abc.SlackAPI):
-
+    """
+    `aiohttp` implementation of :class:`slack.io.abc.SlackAPI`
+    """
     async def _request(self, method, url, headers, body):
         async with self._session.request(method, url, headers=headers,
                                          data=body) as response:

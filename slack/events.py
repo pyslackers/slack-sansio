@@ -8,6 +8,13 @@ LOG = logging.getLogger(__name__)
 
 
 class Event(MutableMapping):
+    """
+    MutableMapping representing a slack event coming from the RTM API or the Event API.
+
+    Attributes:
+        metadata: Metadata dispatched with the event when using the Event API
+                  (see `slack documentation <https://api.slack.com/events-api#receiving_events>`_)
+    """
 
     def __init__(self, raw_event, metadata=None):
         self.event = raw_event
@@ -32,10 +39,28 @@ class Event(MutableMapping):
         return 'Slack Event: ' + str(self.event)
 
     def clone(self):
+        """
+        Clone the event
+
+        Returns:
+            :class:`slack.events.Event`
+
+        """
         return self.__class__(self.event, self.metadata)
 
     @classmethod
     def from_rtm(cls, raw_event):
+        """
+        Create an event with data coming from the RTM API.
+
+        If the event type is a message a :class:`slack.events.Message` is returned.
+
+        Args:
+            raw_event: JSON decoded data from the RTM API
+
+        Returns:
+            :class:`slack.events.Event` or :class:`slack.events.Message`
+        """
         if raw_event['type'].startswith('message'):
             return Message(raw_event)
         else:
@@ -43,7 +68,23 @@ class Event(MutableMapping):
 
     @classmethod
     def from_http(cls, raw_body, verification_token=None, team_id=None):
+        """
+        Create an event with data coming from the HTTP Event API.
 
+        If the event type is a message a :class:`slack.events.Message` is returned.
+
+        Args:
+            raw_body: Decoded body of the Event API request
+            verification_token: Slack verification token used to verify the request came from slack
+            team_id: Verify the event is for the correct team
+
+        Returns:
+            :class:`slack.events.Event` or :class:`slack.events.Message`
+
+        Raises:
+            :class:`slack.exceptions.FailedVerification`: when `verification_token` or `team_id` does not match the one
+                                                          of the incoming event
+        """
         if verification_token and raw_body['token'] != verification_token:
             raise exceptions.FailedVerification(raw_body['token'], raw_body['team_id'])
 
@@ -57,12 +98,26 @@ class Event(MutableMapping):
 
 
 class Message(Event):
+    """
+    Type of :class:`slack.events.Event` corresponding to a message event type
+    """
 
     def __repr__(self):
         return 'Slack Message: ' + str(self.event)
 
     def response(self, in_thread=None):
+        """
+        Create a response message.
 
+        Depending on the incoming message the response can be in a thread. By default the response follow where the
+        incoming message was posted.
+
+        Args:
+            in_thread (boolean): Overwrite the `threading` behaviour
+
+        Returns:
+             a new :class:`slack.event.Message`
+        """
         data = {'channel': self['channel']}
 
         if in_thread:
@@ -79,6 +134,12 @@ class Message(Event):
         return Message(data)
 
     def serialize(self):
+        """
+        Serialize the message for sending to slack API
+
+        Returns:
+            serialized message
+        """
         data = {**self}
         if 'attachments' in self:
             data['attachments'] = json.dumps(self['attachments'])
