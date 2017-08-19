@@ -43,7 +43,7 @@ setuptools.setup(
     setup_requires=requires['setup'],
     tests_require=requires['tests'],
     extras_require=requires,
-    python_requires='>=3.6',
+    # python_requires='>=3.6',
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
