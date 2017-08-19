@@ -4,6 +4,7 @@ import pprint
 import asyncio
 import aiohttp
 import logging
+import slack
 
 from slack.io.aiohttp import SlackAPI
 from slack.events import Message
@@ -22,7 +23,7 @@ async def rtm(client):
 async def respond_to_message(message, client):
     response = message.response()
     response['text'] = 'Hello world !'
-    await client.query('chat.postMessage', data=response.serialize())
+    await client.query(slack.methods.CHAT_POST_MESSAGE, data=response.serialize())
 
 if __name__ == '__main__':
 

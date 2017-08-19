@@ -3,6 +3,7 @@ import sys
 import pprint
 import logging
 import requests
+import slack
 
 from slack.io.sync import SlackAPI
 from slack.events import Message
@@ -23,7 +24,7 @@ def rtm(client):
 def respond_to_message(message, client):
     response = message.response()
     response['text'] = 'Hello world !'
-    client.query('chat.postMessage', data=response.serialize())
+    client.query(slack.methods.CHAT_POST_MESSAGE, data=response.serialize())
 
 if __name__ == '__main__':
 

@@ -4,6 +4,7 @@ import pprint
 import asyncio
 import aiohttp
 import logging
+import slack
 
 from slack.io.aiohttp import SlackAPI
 
@@ -12,7 +13,7 @@ LOG = logging.getLogger(__name__)
 
 async def query(client):
 
-    data = await client.query('auth.test')
+    data = await client.query(slack.methods.AUTH_TEST)
     pprint.pprint(data)
 
 if __name__ == '__main__':

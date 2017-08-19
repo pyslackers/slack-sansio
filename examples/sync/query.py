@@ -3,6 +3,7 @@ import sys
 import pprint
 import logging
 import requests
+import slack
 
 from slack.io.sync import SlackAPI
 
@@ -11,7 +12,7 @@ LOG = logging.getLogger(__name__)
 
 
 def query(client):
-    data = client.query('auth.test')
+    data = client.query(slack.methods.AUTH_TEST)
     pprint.pprint(data)
 
 
