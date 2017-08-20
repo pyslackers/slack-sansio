@@ -11,11 +11,13 @@ requires = {
     'doc': {'sphinx', 'sphinxcontrib-asyncio', 'sphinxcontrib-napoleon'},
     'dev': {'tox'},
     'requests': ['requests', 'websocket-client'],
-    'aiohttp': ['aiohttp']
+    'aiohttp': ['aiohttp'],
+    'curio': ['curio', 'asks'],
+    'trio': ['trio', 'asks']
 }
 
 requires['dev'].update(*requires.values())
-requires['full'].update(requires['requests'], requires['aiohttp'])
+requires['full'].update(requires['requests'], requires['aiohttp'], requires['curio'], requires['trio'])
 
 
 def find_version():

@@ -23,8 +23,7 @@ class SlackAPI(abc.ABC):
         rate_limited: If rate limited timestamp when rate limit stop
 
     """
-    def __init__(self, *, session, token, retry_when_rate_limit=True, headers=None):
-        self._session = session
+    def __init__(self, *, token, retry_when_rate_limit=True, headers=None):
         self._token = token
         self._headers = headers or {}
         self._retry_when_rate_limit = retry_when_rate_limit

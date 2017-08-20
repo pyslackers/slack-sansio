@@ -21,8 +21,13 @@ Slack-sansio is `available on PyPI <https://pypi.org/project/slack-sansio/>`_.
 .. code::
 
     $ pip3 install slack-sansio  # No specific implementation requirements
+
+.. code::
+
     $ pip3 install slack-sansio[requests]  # Requests implementation requirements
     $ pip3 install slack-sansio[aiohttp]  # Aiohttp implementation requirements
+    $ pip3 install slack-sansio[curio]  # Curio implementation requirements
+    $ pip3 install slack-sansio[trio]  # Trio implementation requirements
     $ pip3 install slack-sansio[full]  # All implementations requirements
 
 Quickstart
@@ -43,17 +48,26 @@ Quickstart
 
 For more examples see the `examples folder <https://github.com/pyslackers/slack-sansio/tree/master/examples>`_.
 
-I/O Implementation
-------------------
+I/O Implementations
+-------------------
 
-Two I/O implementation are provided with the library. One synchronous built upon
-`request <http://docs.python-requests.org/en/master/>`_  and a second one built upon
-`aiohttp <http://aiohttp.readthedocs.io/en/stable/>`_.
+Most people would want to use one of these implementations directly. For those that have an HTTP library which is not
+supported this library provide the base tools to ease the use of the Slack API.
 
-The library also provide an abstract base class on which to built I/O implementation.
+* Synchronous with `request <http://docs.python-requests.org>`_.
+* `Asyncio <https://docs.python.org/3/library/asyncio.html>`_ with `aiohttp <http://aiohttp.readthedocs.io/en/stable/>`_.
+
+* `Curio <http://curio.readthedocs.io>`_ with `asks <http://asks.readthedocs.io>`_ (In development).
+* `Trio <http://trio.readthedocs.io/>`_ with `asks <http://asks.readthedocs.io>`_ (In development).
 
 Changelog
 ---------
+
+0.2.1
+-----
+
+* Curio support (query and iterate)
+* Trio support (query and iterate)
 
 0.2.0
 `````
