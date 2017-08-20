@@ -8,7 +8,8 @@ requires = {
     'setup': [],
     'tests': ['flake8'],
     'full': set(),
-    'dev': {'tox', 'sphinx', 'sphinxcontrib-asyncio', 'sphinxcontrib-napoleon'},
+    'doc': {'sphinx', 'sphinxcontrib-asyncio', 'sphinxcontrib-napoleon'},
+    'dev': {'tox'},
     'requests': ['requests', 'websocket-client'],
     'aiohttp': ['aiohttp']
 }

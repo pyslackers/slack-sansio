@@ -1,10 +1,17 @@
-slack-sansio
-============
+`slack-sansio <http://slack-sansio.readthedocs.io>`_
+====================================================
 
 Python (a)sync `Slack API <https://api.slack.com/>`_ library
 
+.. image:: https://readthedocs.org/projects/slack-sansio/badge/?version=stable
+    :target: http://slack-sansio.readthedocs.io/en/stable/?badge=stable
+    :alt: Documentation Status
 .. image:: https://travis-ci.org/pyslackers/slack-sansio.svg?branch=master
     :target: https://travis-ci.org/pyslackers/slack-sansio
+    :alt: Travis-ci status
+.. image:: https://badge.fury.io/py/slack-sansio.svg
+    :target: https://pypi.org/project/slack-sansio/
+    :alt: PyPI status
 
 Installation
 ------------
@@ -47,6 +54,11 @@ The library also provide an abstract base class on which to built I/O implementa
 
 Changelog
 ---------
+
+0.2.0
+`````
+
+* Enum of slack API methods
 
 0.1.0
 `````

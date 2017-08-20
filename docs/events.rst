@@ -2,10 +2,5 @@
 :mod:`slack.events` - Events
 ============================
 
-.. module:: slack.events
-
-.. autoclass:: slack.events.Event
-   :members:
-
-.. autoclass:: slack.events.Message
+.. automodule:: slack.events
    :members:
