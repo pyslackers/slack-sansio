@@ -1,8 +1,8 @@
 import os
 import sys
+import slack
 import pprint
 import logging
-import slack
 
 from twisted.internet import reactor, defer, task
 from slack.io.treq import SlackAPI
