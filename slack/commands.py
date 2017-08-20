@@ -7,6 +7,16 @@ LOG = logging.getLogger(__name__)
 
 
 class Command(MutableMapping):
+    """
+    MutableMapping representing a slack slash command.
+
+    Args:
+        raw_command: Decoded body of the webhook HTTP request
+
+    Raises:
+        :class:`slack.exceptions.FailedVerification`: when `verification_token` or `team_id` does not match the
+                                                      incoming command's
+    """
 
     def __init__(self, raw_command, verification_token=None, team_id=None):
         self.command = raw_command
@@ -37,15 +47,35 @@ class Command(MutableMapping):
 
 
 class Router:
-
+    """
+    When creating slash command for your applications each one can have a custom webhook url. For ease of configuration
+    this class provide a routing mechanisms based on the command so that each command can define the same webhook
+    url.
+    """
     def __init__(self):
         self._routes = defaultdict(dict)
 
     def register(self, command, handler):
+        """
+        Register a new handler for a specific slash command
+
+        Args:
+            command: Slash command
+            handler: Callback
+        """
         LOG.info('Registering %s to %s', command, handler.__name__)
         self._routes[command].append(handler)
 
     def dispatch(self, command):
+        """
+        Yields handlers matching the incoming :class:`slack.actions.Command`.
+
+        Args:
+            command: :class:`slack.actions.Command`
+
+        Yields:
+            handler
+        """
         LOG.debug('Dispatching command %s', command['command'])
-        for callback in self._routes[command['command']]:
+        for callback in self._routes.get(command['command']):
             yield callback

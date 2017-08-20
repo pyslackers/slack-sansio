@@ -40,15 +40,31 @@ Examples are dependant of the implementations and can be found on the documentat
  - :ref:`Requests examples <requests-examples>`
  - :ref:`Aiohttp examples <aiohttp-examples>`
 
+Methods
+-------
+
+For ease of use the library provide an :py:class:`enum.Enum` of all the slack API methods.
+
+.. module:: slack.methods
+
+.. autoclass:: slack.methods
+   :noindex:
+
+.. autoclass:: slack.methods.Methods
+   :members:
+
+
 Navigation
 ----------
 
 .. toctree::
    :maxdepth: 1
 
-   methods
-   exceptions
    events
+   commands
+   actions
    implementations/abc
    implementations/requests
    implementations/aiohttp
+   sansio
+   exceptions

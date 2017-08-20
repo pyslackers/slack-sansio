@@ -13,7 +13,7 @@ class Event(MutableMapping):
 
     Attributes:
         metadata: Metadata dispatched with the event when using the Event API
-                  (see `slack documentation <https://api.slack.com/events-api#receiving_events>`_)
+                  (see `slack event API documentation <https://api.slack.com/events-api#receiving_events>`_)
     """
 
     def __init__(self, raw_event, metadata=None):
@@ -82,8 +82,8 @@ class Event(MutableMapping):
             :class:`slack.events.Event` or :class:`slack.events.Message`
 
         Raises:
-            :class:`slack.exceptions.FailedVerification`: when `verification_token` or `team_id` does not match the one
-                                                          of the incoming event
+            :class:`slack.exceptions.FailedVerification`: when `verification_token` or `team_id` does not match the
+                                                          incoming event's.
         """
         if verification_token and raw_body['token'] != verification_token:
             raise exceptions.FailedVerification(raw_body['token'], raw_body['team_id'])
@@ -147,11 +147,27 @@ class Message(Event):
 
 
 class Router:
-
+    """
+    When receiving an event form the RTM API or the slack API it is useful to have a routing mechanisms for
+    dispatching event to individual function/coroutine. This class provide such mechanisms for any
+    :class:`slack.events.Event`.
+    """
     def __init__(self):
         self._routes = defaultdict(dict)
 
     def register(self, event_type, handler, **detail):
+        """
+        Register a new handler for a specific :class:`slack.events.Event` `type` (See `slack event types documentation
+        <https://api.slack.com/events>`_ for a list of event types).
+
+        The arbitrary keyword argument is used as a key/value pair to compare against what is in the incoming
+        :class:`slack.events.Event`
+
+        Args:
+            event_type: Event type the handler is interested in
+            handler: Callback
+            **detail: Additional key for routing
+        """
         LOG.info('Registering %s, %s to %s', event_type, detail, handler.__name__)
         if len(detail) > 1:
             raise TypeError('Only one detail can be provided for additional routing')
@@ -169,6 +185,15 @@ class Router:
         self._routes[event_type][detail_key][detail_value].append(handler)
 
     def dispatch(self, event):
+        """
+        Yields handlers matching the routing of the incoming :class:`slack.events.Event`.
+
+        Args:
+            event: :class:`slack.events.Event`
+
+        Yields:
+            handler
+        """
         LOG.debug('Dispatching event %s', event.get('type'))
         for detail_key, detail_values in self._routes.get(event.get('type')):
             event_value = event.get(detail_key, '*')

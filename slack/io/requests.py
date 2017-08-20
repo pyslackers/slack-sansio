@@ -40,7 +40,7 @@ class SlackAPI(abc.SlackAPI):
             url, body, headers = sansio.prepare_request(url=url, data=data, headers=headers,
                                                         global_headers=self._headers, token=self._token)
             status, body, headers = self._request('POST', url, headers, body)
-            response_data = sansio.decode_request(status, headers, body)
+            response_data = sansio.decode_response(status, headers, body)
         except exceptions.RateLimited as rate_limited:
             if self._retry_when_rate_limit:
                 raise

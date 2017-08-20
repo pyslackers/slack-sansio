@@ -10,7 +10,8 @@ LOG = logging.getLogger(__name__)
 
 class SlackAPI(abc.ABC):
     """
-    :py:term:`abstract base class` abstracting the HTTP library used to call Slack API.
+    :py:term:`abstract base class` abstracting the HTTP library used to call Slack API. Built with the functions of
+    :mod:`slack.sansio`.
 
     Args:
         session: HTTP session
@@ -51,7 +52,7 @@ class SlackAPI(abc.ABC):
             url, body, headers = sansio.prepare_request(url=url, data=data, headers=headers,
                                                         global_headers=self._headers, token=self._token)
             status, body, headers = await self._request('POST', url, headers, body)
-            response_data = sansio.decode_request(status, headers, body)
+            response_data = sansio.decode_response(status, headers, body)
         except exceptions.RateLimited as rate_limited:
             if self._retry_when_rate_limit:
                 raise
