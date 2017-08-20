@@ -9,11 +9,20 @@ Many slack libraries already exist for Python but none oriented towards asynchro
 community and decided to take it out and create this library. We also choose to take a
 `sans-I/O approach <https://sans-io.readthedocs.io/>`_ to allow reusability for other asynchronous frameworks.
 
-This library also provide two implementation, one synchronous built upon
-`request <http://docs.python-requests.org/en/master/>`_  and a second one asynchronous built upon
-`aiohttp <http://aiohttp.readthedocs.io/en/stable/>`_. Most people would want to use one of these implementations.
-For those that have an HTTP library which is not supported this library provide the base tools to ease the use of the
-Slack API.
+I/O Implementations
+-------------------
+
+Most people would want to use one of these implementations directly. For those that have an HTTP library which is not
+supported this library provide the base tools to ease the use of the Slack API.
+
+ - Synchronous with `request <http://docs.python-requests.org>`_.
+ - `Asyncio <https://docs.python.org/3/library/asyncio.html>`_ with `aiohttp <http://aiohttp.readthedocs.io/en/stable/>`_.
+
+In development
+^^^^^^^^^^^^^^
+
+ - `Curio <http://curio.readthedocs.io>`_ with `asks <http://asks.readthedocs.io>`_
+ - `Trio <http://trio.readthedocs.io/>`_ with `asks <http://asks.readthedocs.io>`_
 
 Installation
 ------------
@@ -30,6 +39,8 @@ Due to it's sans-I/O approach extra requirements are needed for each implementat
 
     $ pip3 install slack-sansio[requests]  # requests implementation extra requirements
     $ pip3 install slack-sansio[aiohttp]  # aiohttp implementation extra requirements
+    $ pip3 install slack-sansio[curio]  # curio implementation extra requirements
+    $ pip3 install slack-sansio[trio]  # trio implementation extra requirements
     $ pip3 install slack-sansio[full]  # all implementations extra requirements
 
 Examples
@@ -39,6 +50,8 @@ Examples are dependant of the implementations and can be found on the documentat
 
  - :ref:`Requests examples <requests-examples>`
  - :ref:`Aiohttp examples <aiohttp-examples>`
+ - :ref:`Curio examples <curio-examples>`
+ - :ref:`Trio examples <trio-examples>`
 
 Methods
 -------
@@ -67,5 +80,6 @@ Navigation
    implementations/requests
    implementations/aiohttp
    implementations/curio
+   implementations/trio
    sansio
    exceptions

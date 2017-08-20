@@ -12,11 +12,12 @@ requires = {
     'dev': {'tox'},
     'requests': ['requests', 'websocket-client'],
     'aiohttp': ['aiohttp'],
-    'curio': ['curio', 'asks']
+    'curio': ['curio', 'asks'],
+    'trio': ['trio', 'asks']
 }
 
 requires['dev'].update(*requires.values())
-requires['full'].update(requires['requests'], requires['aiohttp'], requires['curio'])
+requires['full'].update(requires['requests'], requires['aiohttp'], requires['curio'], requires['trio'])
 
 
 def find_version():
