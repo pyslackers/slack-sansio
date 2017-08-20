@@ -23,6 +23,7 @@ Slack-sansio is `available on PyPI <https://pypi.org/project/slack-sansio/>`_.
     $ pip3 install slack-sansio  # No specific implementation requirements
     $ pip3 install slack-sansio[requests]  # Requests implementation requirements
     $ pip3 install slack-sansio[aiohttp]  # Aiohttp implementation requirements
+    $ pip3 install slack-sansio[curio]  # Aiohttp implementation requirements
     $ pip3 install slack-sansio[full]  # All implementations requirements
 
 Quickstart
@@ -50,10 +51,18 @@ Two I/O implementation are provided with the library. One synchronous built upon
 `request <http://docs.python-requests.org/en/master/>`_  and a second one built upon
 `aiohttp <http://aiohttp.readthedocs.io/en/stable/>`_.
 
+A `asks <http://asks.readthedocs.io/en/latest/>`_ `curio <http://curio.readthedocs.io/en/latest/>`_ implementation is
+under development.
+
 The library also provide an abstract base class on which to built I/O implementation.
 
 Changelog
 ---------
+
+0.2.1
+-----
+
+* Curio support with `asks` (query and iterate)
 
 0.2.0
 `````

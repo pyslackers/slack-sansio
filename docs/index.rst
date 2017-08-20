@@ -66,5 +66,6 @@ Navigation
    implementations/abc
    implementations/requests
    implementations/aiohttp
+   implementations/curio
    sansio
    exceptions
