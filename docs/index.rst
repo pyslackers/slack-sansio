@@ -21,8 +21,9 @@ supported this library provide the base tools to ease the use of the Slack API.
 In development
 ^^^^^^^^^^^^^^
 
- - `Curio <http://curio.readthedocs.io>`_ with `asks <http://asks.readthedocs.io>`_
- - `Trio <http://trio.readthedocs.io/>`_ with `asks <http://asks.readthedocs.io>`_
+ - `Curio <http://curio.readthedocs.io>`_ with `asks <http://asks.readthedocs.io>`_.
+ - `Trio <http://trio.readthedocs.io/>`_ with `asks <http://asks.readthedocs.io>`_.
+ - `Twisted <https://twistedmatrix.com/trac/>`_ with `treq <https://github.com/twisted/treq>`_.
 
 Installation
 ------------
@@ -37,11 +38,12 @@ Due to it's sans-I/O approach extra requirements are needed for each implementat
 
 .. code:: console
 
-    $ pip3 install slack-sansio[requests]  # requests implementation extra requirements
+    $ pip3 install slack-sansio[requests] # requests implementation extra requirements
     $ pip3 install slack-sansio[aiohttp]  # aiohttp implementation extra requirements
-    $ pip3 install slack-sansio[curio]  # curio implementation extra requirements
-    $ pip3 install slack-sansio[trio]  # trio implementation extra requirements
-    $ pip3 install slack-sansio[full]  # all implementations extra requirements
+    $ pip3 install slack-sansio[curio]    # curio implementation extra requirements
+    $ pip3 install slack-sansio[trio]     # trio implementation extra requirements
+    $ pip3 install slack-sansio[treq]     # treq implementation extra requirements
+    $ pip3 install slack-sansio[full]     # all implementations extra requirements
 
 Examples
 --------
@@ -52,6 +54,7 @@ Examples are dependant of the implementations and can be found on the documentat
  - :ref:`Aiohttp examples <aiohttp-examples>`
  - :ref:`Curio examples <curio-examples>`
  - :ref:`Trio examples <trio-examples>`
+ - :ref:`Treq examples <treq-examples>`
 
 Methods
 -------
@@ -81,5 +84,6 @@ Navigation
    implementations/aiohttp
    implementations/curio
    implementations/trio
+   implementations/treq
    sansio
    exceptions
