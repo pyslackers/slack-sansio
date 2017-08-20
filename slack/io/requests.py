@@ -13,6 +13,11 @@ class SlackAPI(abc.SlackAPI):
     """
     `requests` implementation of :class:`slack.io.abc.SlackAPI`
     """
+
+    def __init__(self, *, session, **kwargs):
+        self._session = session
+        super().__init__(**kwargs)
+
     def _request(self, method, url, headers, body):
 
         response = self._session.request(method, url, headers=headers, data=body)

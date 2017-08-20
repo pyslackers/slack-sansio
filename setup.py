@@ -13,11 +13,13 @@ requires = {
     'requests': ['requests', 'websocket-client'],
     'aiohttp': ['aiohttp'],
     'curio': ['curio', 'asks'],
-    'trio': ['trio', 'asks']
+    'trio': ['trio', 'asks'],
+    'treq': ['treq'],
 }
 
 requires['dev'].update(*requires.values())
-requires['full'].update(requires['requests'], requires['aiohttp'], requires['curio'], requires['trio'])
+requires['full'].update(requires['requests'], requires['aiohttp'], requires['curio'], requires['trio'],
+                        requires['treq'])
 
 
 def find_version():
