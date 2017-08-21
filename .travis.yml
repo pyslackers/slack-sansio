@@ -18,6 +18,7 @@ install:
 
 script:
   - python setup.py flake8
+  - python setup.py test
   - python setup.py doc
   - python setup.py sdist
   - python setup.py bdist_wheel

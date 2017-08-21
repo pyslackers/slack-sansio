@@ -32,7 +32,6 @@ class SlackAPIError(BaseException):
     def __init__(self, error, headers, data):
         self.headers = headers
         self.data = data
-
         self.error = error
 
     def __str__(self):

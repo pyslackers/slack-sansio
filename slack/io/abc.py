@@ -32,7 +32,7 @@ class SlackAPI(abc.ABC):
 
     @abc.abstractmethod
     async def _request(self, method, url, headers, body):
-        return '', {}, b''
+        return '', b'', {}
 
     @abc.abstractmethod
     async def _rtm(self, url):
@@ -96,6 +96,10 @@ class SlackAPI(abc.ABC):
 
         """
         itervalue = None
+
+        if not data:
+            data = {}
+
         while True:
             data, iterkey, itermode = sansio.prepare_iter_request(url, data, iterkey=iterkey, itermode=itermode,
                                                                   limit=limit, itervalue=itervalue)
