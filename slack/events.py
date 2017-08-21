@@ -102,6 +102,11 @@ class Message(Event):
     Type of :class:`slack.events.Event` corresponding to a message event type
     """
 
+    def __init__(self, msg=None, metadata=None):
+        if not msg:
+            msg = {}
+        super().__init__(msg, metadata)
+
     def __repr__(self):
         return 'Slack Message: ' + str(self.event)
 

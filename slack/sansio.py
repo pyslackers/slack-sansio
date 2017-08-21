@@ -59,7 +59,7 @@ def raise_for_api_error(headers, data):
         raise exceptions.SlackAPIError(data.get('error', 'unknow_error'), headers, data)
 
     if 'warning' in data:
-        LOG.warning(data['warning'])
+        LOG.warning('Slack API WARNING: %s', data['warning'])
 
 
 def decode_body(headers, body):
@@ -75,6 +75,7 @@ def decode_body(headers, body):
     Returns:
         decoded body
     """
+
     type_, encoding = parse_content_type(headers)
     decoded_body = body.decode(encoding)
 
@@ -122,11 +123,6 @@ def prepare_request(url, data, headers, global_headers, token):
     if isinstance(data, events.Message):
         data = data.serialize()
 
-    if isinstance(url, methods):
-        url = url.value[0]
-    elif not url.startswith(ROOT_URL):
-        url = ROOT_URL + url
-
     if not headers:
         headers = {**global_headers}
     else:
@@ -137,8 +133,14 @@ def prepare_request(url, data, headers, global_headers, token):
     elif 'token' not in data:
         data['token'] = token
 
-    if url.startswith('https://hooks.slack.com'):
+    if isinstance(url, methods):
+        url = url.value[0]
+        body = data
+    elif url.startswith('https://hooks.slack.com'):
         body = json.dumps(data)
+    elif not url.startswith(ROOT_URL):
+        url = ROOT_URL + url
+        body = data
     else:
         body = data
 
@@ -206,9 +208,6 @@ def prepare_iter_request(url, data, *, iterkey=None, itermode=None, limit=200, i
     """
     itermode, iterkey = find_iteration(url, itermode, iterkey)
 
-    if not data:
-        data = {}
-
     if itermode == 'cursor':
         data['limit'] = limit
         if itervalue:
@@ -221,8 +220,6 @@ def prepare_iter_request(url, data, *, iterkey=None, itermode=None, limit=200, i
         data['count'] = limit
         if itervalue:
             data['latest'] = itervalue
-    else:
-        raise NotImplementedError('Unknown itermode: %s', itermode)
 
     return data, iterkey, itermode
 
