@@ -15,6 +15,7 @@ python:
 
 install:
   - pip install .[dev]
+  - pip install coveralls
 
 script:
   - python setup.py flake8
@@ -22,6 +23,9 @@ script:
   - python setup.py doc
   - python setup.py sdist
   - python setup.py bdist_wheel
+
+after_success:
+  - coveralls
 
 before_deploy:
   - pip install dothub
