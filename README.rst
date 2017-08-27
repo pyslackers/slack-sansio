@@ -12,6 +12,9 @@ Python (a)sync `Slack API <https://api.slack.com/>`_ library
 .. image:: https://badge.fury.io/py/slack-sansio.svg
     :target: https://pypi.org/project/slack-sansio/
     :alt: PyPI status
+.. image:: https://coveralls.io/repos/github/pyslackers/slack-sansio/badge.svg?branch=master
+    :target: https://coveralls.io/github/pyslackers/slack-sansio?branch=master
+    :alt: Coverage status
 
 Installation
 ------------

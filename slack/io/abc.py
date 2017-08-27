@@ -32,7 +32,7 @@ class SlackAPI(abc.ABC):
 
     @abc.abstractmethod
     async def _request(self, method, url, headers, body):
-        return '', b'', {}
+        pass
 
     @abc.abstractmethod
     async def _rtm(self, url):
@@ -45,7 +45,7 @@ class SlackAPI(abc.ABC):
     async def _make_query(self, url, data=None, headers=None):
 
         while self.rate_limited and self.rate_limited > int(time.time()):
-            await self.sleep(1)
+            await self.sleep(self.rate_limited - int(time.time()))
 
         try:
             url, body, headers = sansio.prepare_request(url=url, data=data, headers=headers,
@@ -54,11 +54,11 @@ class SlackAPI(abc.ABC):
             response_data = sansio.decode_response(status, headers, body)
         except exceptions.RateLimited as rate_limited:
             if self._retry_when_rate_limit:
-                raise
-            else:
                 LOG.warning('Rate limited ! Waiting for %s seconds', rate_limited.retry_after)
                 self.rate_limited = int(time.time()) + rate_limited.retry_after
                 return await self._make_query(url, data, headers)
+            else:
+                raise
         else:
             self.rate_limited = False
             return response_data
