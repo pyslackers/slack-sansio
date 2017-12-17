@@ -199,9 +199,12 @@ class Router:
         Yields:
             handler
         """
-        LOG.debug('Dispatching event %s', event.get('type'))
-        for detail_key, detail_values in self._routes.get(event.get('type')):
-            event_value = event.get(detail_key, '*')
-            callbacks = detail_values.get(event_value, [])
-            for callback in callbacks:
-                yield callback
+        LOG.debug('Dispatching event "%s"', event.get('type'))
+        if event['type'] in self._routes:
+            for detail_key, detail_values in self._routes.get(event['type'], {}).items():
+                event_value = event.get(detail_key, '*')
+                callbacks = detail_values.get(event_value, [])
+                for callback in callbacks:
+                    yield callback
+        else:
+            return
