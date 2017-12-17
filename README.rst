@@ -70,6 +70,15 @@ The library also provide an abstract base class on which to built I/O implementa
 Changelog
 ---------
 
+0.2.3 (dev)
+```````````
+
+0.2.2
+`````
+
+* Fix bug in routing bug in `events.Router`
+* Inherit from `Exception` instead if `BaseExecption` in custom exceptions.
+
 0.2.1
 `````
 
