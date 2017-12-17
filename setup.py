@@ -6,7 +6,7 @@ LONG_DESCRIPTION = pathlib.Path('README.rst').read_text('utf-8')
 requires = {
     'install': [],
     'setup': ['pytest-runner'],
-    'tests': ['flake8', 'pytest', 'coverage', 'pytest-coverage', 'pytest-asyncio', 'asynctest'],
+    'tests': ['flake8', 'pytest>=3.3.0', 'coverage', 'pytest-coverage', 'pytest-asyncio', 'asynctest'],
     'full': set(),
     'doc': {'sphinx', 'sphinxcontrib-asyncio', 'sphinxcontrib-napoleon'},
     'dev': {'tox'},

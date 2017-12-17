@@ -1,6 +1,6 @@
 import time
-
 import pytest
+import logging
 
 from slack import sansio, exceptions, methods, events
 
@@ -186,13 +186,14 @@ class TestResponse:
         assert exc.type == exceptions.SlackAPIError
         assert exc.value.error == 'test_error'
 
-    def test_raise_for_api_error_warning(self, capsys):
-
+    def test_raise_for_api_error_warning(self, caplog):
+        caplog.set_level(logging.WARNING)
         data = {'ok': True, 'warning': 'test warning'}
-
         sansio.raise_for_api_error({}, data)
-        _, err = capsys.readouterr()
-        assert err == 'Slack API WARNING: test warning\n'
+
+        assert len(caplog.records) == 1
+        assert caplog.records[0].msg == 'Slack API WARNING: %s'
+        assert caplog.records[0].args == ('test warning',)
 
     def test_decode_body(self):
         body = b'hello world'
