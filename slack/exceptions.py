@@ -1,7 +1,7 @@
 import http
 
 
-class HTTPException(BaseException):
+class HTTPException(Exception):
     """
     Raised on non 200 status code
 
@@ -20,7 +20,7 @@ class HTTPException(BaseException):
         return '{}, {}'.format(self.status.value, self.status.phrase)
 
 
-class SlackAPIError(BaseException):
+class SlackAPIError(Exception):
     """
     Raised for errors return by the Slack API
 
@@ -54,7 +54,7 @@ class RateLimited(HTTPException, SlackAPIError):
         return HTTPException.__str__(self) + ', retry in {}s'.format(self.retry_after)
 
 
-class FailedVerification(BaseException):
+class FailedVerification(Exception):
     """
     Raised when incoming data from Slack webhooks fail verification
 
