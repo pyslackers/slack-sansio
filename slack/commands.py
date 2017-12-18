@@ -53,7 +53,7 @@ class Router:
     url.
     """
     def __init__(self):
-        self._routes = defaultdict(dict)
+        self._routes = defaultdict(list)
 
     def register(self, command, handler):
         """
