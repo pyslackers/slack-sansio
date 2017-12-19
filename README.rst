@@ -73,11 +73,15 @@ Changelog
 0.2.3 (dev)
 ```````````
 
+* Bugfix for `commands.Router`.
+* New `events.MessageRouter` for `events.Message` routing based on regular expression.
+* Rename `events.Router` to `events.EventRouter`.
+
 0.2.2
 `````
 
-* Fix bug in routing bug in `events.Router`
-* Inherit from `Exception` instead if `BaseExecption` in custom exceptions.
+* Fix routing bug in `events.Router`
+* Inherit from `Exception` instead of `BaseExecption` in custom exceptions.
 
 0.2.1
 `````

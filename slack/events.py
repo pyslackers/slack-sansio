@@ -1,7 +1,10 @@
+import re
 import json
 import logging
+import itertools
 
 from collections import defaultdict, MutableMapping
+
 from . import exceptions
 
 LOG = logging.getLogger(__name__)
@@ -151,9 +154,9 @@ class Message(Event):
         return data
 
 
-class Router:
+class EventRouter:
     """
-    When receiving an event form the RTM API or the slack API it is useful to have a routing mechanisms for
+    When receiving an event from the RTM API or the slack API it is useful to have a routing mechanisms for
     dispatching event to individual function/coroutine. This class provide such mechanisms for any
     :class:`slack.events.Event`.
     """
@@ -208,3 +211,51 @@ class Router:
                     yield callback
         else:
             return
+
+
+class MessageRouter:
+    """
+    When receiving an event of type message from the RTM API or the slack API it is useful to have a routing mechanisms
+    for dispatching the message to individual function/coroutine. This class provide such mechanisms for any
+    :class:`slack.events.Message`.
+
+    The routing is based on regex pattern matching of the message text and the receiving channel.
+    """
+    def __init__(self):
+        self._routes = defaultdict(dict)
+
+    def register(self, pattern, handler, flags=0, channel='*'):
+        """
+        Register a new handler for a specific :class:`slack.events.Message`.
+
+        The routing is based on regex pattern matching the message text and the incoming slack channel.
+
+        Args:
+            pattern: Regex pattern matching the message text.
+            handler: Callback
+            flags: Regex flags.
+            channel: Slack channel ID. Use * for any.
+        """
+        LOG.debug('Registering message endpoint "%s: %s"', pattern, handler)
+        match = re.compile(pattern, flags)
+
+        if match in self._routes[channel]:
+            self._routes[channel][match].append(handler)
+        else:
+            self._routes[channel][match] = [handler]
+
+    def dispatch(self, message):
+        """
+        Yields handlers matching the routing of the incoming :class:`slack.events.Message`
+
+        Args:
+            message: :class:`slack.events.Message`
+
+        Yields:
+            handler
+        """
+        for match, endpoints in itertools.chain(self._routes[message['channel']].items(), self._routes['*'].items()):
+            if 'text' in message and match.search(message['text']):
+                yield from endpoints
+            elif 'message' in message and match.search(message['message']['text']):
+                yield from endpoints
