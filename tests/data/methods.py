@@ -1,13 +1,13 @@
-{
-    "ok": true,
+CHANNELS = {
+    "ok": True,
     "channels": [
         {
             "id": "C00000001",
             "name": "fun",
             "created": 1360782804,
             "creator": "U024BE7LH",
-            "is_archived": false,
-            "is_member": false,
+            "is_archived": False,
+            "is_member": False,
             "num_members": 6,
             "topic": {
                 "value": "Fun times",
@@ -25,8 +25,8 @@
             "name": "fun",
             "created": 1360782804,
             "creator": "U024BE7LH",
-            "is_archived": false,
-            "is_member": false,
+            "is_archived": False,
+            "is_member": False,
             "num_members": 6,
             "topic": {
                 "value": "Fun times",
@@ -39,8 +39,19 @@
                 "last_set": 1360782804
             }
         }
-    ],
+    ]
+}
+
+
+CHANNELS_ITER = {
+    "ok": True,
+    "channels": CHANNELS['channels'],
     "response_metadata": {
         "next_cursor": "wxyz"
     }
+}
+
+payloads = {
+    'channels_iter': CHANNELS_ITER,
+    'channels': CHANNELS
 }

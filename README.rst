@@ -70,18 +70,20 @@ The library also provide an abstract base class on which to built I/O implementa
 Changelog
 ---------
 
-0.2.3 (dev)
-```````````
+0.3.0
+`````
 
-* Bugfix for `commands.Router`.
-* New `events.MessageRouter` for `events.Message` routing based on regular expression.
-* Rename `events.Router` to `events.EventRouter`.
+* Bugfix for ``commands.Router``.
+* New ``events.MessageRouter`` for ``events.Message`` routing based on regular expression.
+* Rename ``events.Router`` to ``events.EventRouter``.
+* Change ``TypeError`` to ``ValueError`` in ``events.EventRouter.register``.
+* Bugfix for threaded messages.
 
 0.2.2
 `````
 
-* Fix routing bug in `events.Router`
-* Inherit from `Exception` instead of `BaseExecption` in custom exceptions.
+* Fix routing bug in ``events.Router``.
+* Inherit from ``Exception`` instead of ``BaseExecption`` in custom exceptions.
 
 0.2.1
 `````

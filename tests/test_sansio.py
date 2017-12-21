@@ -4,14 +4,12 @@ import logging
 
 from slack import sansio, exceptions, methods, events
 
-TEST_TOKEN = 'abcdefghijklmnopqrstuvwxyz'
-
 
 class TestRequest:
-    def test_prepare_request(self):
-        url, body, headers = sansio.prepare_request(methods.AUTH_TEST, {}, {}, {}, TEST_TOKEN)
+    def test_prepare_request(self, token):
+        url, body, headers = sansio.prepare_request(methods.AUTH_TEST, {}, {}, {}, token)
         assert url == 'https://slack.com/api/auth.test'
-        assert body == {'token': TEST_TOKEN}
+        assert body == {'token': token}
         assert headers == {}
 
     def test_prepare_request_urls(self):
@@ -21,18 +19,18 @@ class TestRequest:
 
         assert url1 == url2 == url3 == 'https://slack.com/api/auth.test'
 
-    def test_prepare_request_body(self):
+    def test_prepare_request_body(self, token):
         data1 = {'hello': 'world'}
         data2 = data1.copy()
         data3 = data2.copy()
 
-        _, body1, _ = sansio.prepare_request(methods.AUTH_TEST, data1, {}, {}, TEST_TOKEN)
-        _, body2, _ = sansio.prepare_request('https://hooks.slack.com/abcdefg', data2, {}, {}, TEST_TOKEN)
-        _, body3, _ = sansio.prepare_request('', data3, {}, {}, TEST_TOKEN)
+        _, body1, _ = sansio.prepare_request(methods.AUTH_TEST, data1, {}, {}, token)
+        _, body2, _ = sansio.prepare_request('https://hooks.slack.com/abcdefg', data2, {}, {}, token)
+        _, body3, _ = sansio.prepare_request('', data3, {}, {}, token)
 
-        assert body1 == {'hello': 'world', 'token': TEST_TOKEN}
-        assert body2 == '{"hello": "world", "token": "abcdefghijklmnopqrstuvwxyz"}'
-        assert body3 == {'hello': 'world', 'token': TEST_TOKEN}
+        assert body1 == {'hello': 'world', 'token': token}
+        assert body2 == '{"hello": "world", "token": "' + token + '"}'
+        assert body3 == {'hello': 'world', 'token': token}
 
     def test_prepare_request_headers(self):
         headers = {'hello': 'world', 'python': '3.7'}
@@ -241,37 +239,18 @@ class TestResponse:
         data = {'has_more': True,
                 'latest': timestamp,
                 'messages': [{'ts': latest}]}
-        next = sansio.decode_iter_request(data)
-        assert next == latest
+        next_ = sansio.decode_iter_request(data)
+        assert next_ == latest
 
 
 class TestIncomingEvent:
-    def test_discard_event(self):
-        for event in [
-            events.Event({'type': 'reconnect_url'}),
-            events.Message({'type': 'message', 'bot_id': 'B1234'}),
-            events.Message({'type': 'message', 'message': {'bot_id': 'B1234'}})
-        ]:
-            assert sansio.discard_event(event, 'B1234') is True
 
-        for event in [
-            events.Event({'type': 'channel_joined'}),
-            events.Message({'type': 'message', 'bot_id': 'B5555'}),
-            events.Message({'type': 'message', 'user_id': 'U5555'}),
-            events.Message({'type': 'message', 'message': {'bot_id': 'B5555'}})
-        ]:
-            assert sansio.discard_event(event, 'B1234') is False
+    @pytest.mark.parametrize('event', ('bot', 'bot_edit'), indirect=True)
+    def test_discard_event(self, event):
+        assert sansio.discard_event(event, 'B0AAA0A00') is True
 
-    def test_need_reconnect(self):
+    def test_not_discard_event(self, event):
+        assert sansio.discard_event(event, 'B0AAA0A01') is False
 
-        for event in [
-            events.Event({'type': 'channel_joined'}),
-            events.Message({'type': 'message', 'bot_id': 'B5555'})
-        ]:
-            assert sansio.need_reconnect(event) is False
-
-        for event in [
-            events.Event({'type': 'goodbye'}),
-            events.Message({'type': 'team_migration_started'})
-        ]:
-            assert sansio.need_reconnect(event) is True
+    def test_no_need_reconnect(self, event):
+        assert sansio.need_reconnect(event) is False
