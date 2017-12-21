@@ -1,5 +1,6 @@
 import re
 import json
+import copy
 import logging
 import itertools
 
@@ -49,7 +50,7 @@ class Event(MutableMapping):
             :class:`slack.events.Event`
 
         """
-        return self.__class__(self.event, self.metadata)
+        return self.__class__(copy.deepcopy(self.event), copy.deepcopy(self.metadata))
 
     @classmethod
     def from_rtm(cls, raw_event):
@@ -130,7 +131,7 @@ class Message(Event):
 
         if in_thread:
             if 'message' in self:
-                data['thread_ts'] = self['message'].get('thead_ts') or self['message']['ts']
+                data['thread_ts'] = self['message'].get('thread_ts') or self['message']['ts']
             else:
                 data['thread_ts'] = self.get('thread_ts') or self['ts']
         elif in_thread is None:
@@ -178,7 +179,7 @@ class EventRouter:
         """
         LOG.info('Registering %s, %s to %s', event_type, detail, handler.__name__)
         if len(detail) > 1:
-            raise TypeError('Only one detail can be provided for additional routing')
+            raise ValueError('Only one detail can be provided for additional routing')
         elif not detail:
             detail_key, detail_value = '*', '*'
         else:
