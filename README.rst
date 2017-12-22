@@ -74,6 +74,7 @@ dev
 ```
 
 * Bugfix for ``actions.Action`` and ``actions.Router``.
+* Bugfix in data serialization for response urls ``https://hooks.slack.com/``.
 
 0.3.0
 `````
