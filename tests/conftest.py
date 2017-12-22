@@ -6,6 +6,7 @@ import asynctest
 
 from slack.io.abc import SlackAPI
 from slack.events import Event, EventRouter, MessageRouter
+from slack.actions import Action, Router as ActionRouter
 
 from . import data
 
@@ -110,3 +111,24 @@ def event_router():
 @pytest.fixture()
 def message_router():
     return MessageRouter()
+
+
+@pytest.fixture(params={**data.actions.actions})
+def action(request):
+    return Action.from_http(raw_action(request))
+
+
+@pytest.fixture(params={**data.actions.actions})
+def raw_action(request):
+    if isinstance(request.param, str):
+        if request.param in data.actions.actions:
+            return copy.deepcopy(data.actions.actions[request.param])
+        else:
+            raise ValueError(f'Raw action "{request.param}" not found')
+    else:
+        return copy.deepcopy(request.param)
+
+
+@pytest.fixture()
+def action_router():
+    return ActionRouter()
