@@ -142,7 +142,7 @@ class Message(Event):
 
         return Message(data)
 
-    def serialize(self):
+    def serialize(self, attachments_as_json=True):
         """
         Serialize the message for sending to slack API
 
@@ -150,7 +150,7 @@ class Message(Event):
             serialized message
         """
         data = {**self}
-        if 'attachments' in self:
+        if 'attachments' in self and attachments_as_json:
             data['attachments'] = json.dumps(self['attachments'])
         return data
 
@@ -207,9 +207,7 @@ class EventRouter:
         if event['type'] in self._routes:
             for detail_key, detail_values in self._routes.get(event['type'], {}).items():
                 event_value = event.get(detail_key, '*')
-                callbacks = detail_values.get(event_value, [])
-                for callback in callbacks:
-                    yield callback
+                yield from detail_values.get(event_value, [])
         else:
             return
 

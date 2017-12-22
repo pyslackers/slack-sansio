@@ -6,7 +6,7 @@ import cgi
 import json
 import logging
 
-from . import exceptions, events, methods, ROOT_URL
+from . import exceptions, events, methods, ROOT_URL, HOOK_URL
 
 LOG = logging.getLogger(__name__)
 
@@ -120,31 +120,48 @@ def prepare_request(url, data, headers, global_headers, token):
     Returns:
         :py:class:`tuple` (url, body, headers)
     """
-    if isinstance(data, events.Message):
-        data = data.serialize()
 
     if not headers:
         headers = {**global_headers}
     else:
         headers = {**global_headers, **headers}
 
+    if isinstance(url, methods):
+        url = url.value[0]
+        data = _prepare_request(data, token)
+    elif url.startswith(HOOK_URL):
+        data = _prepare_hook(data, token)
+    elif url.startswith(ROOT_URL):
+        data = _prepare_request(data, token)
+    else:
+        url = ROOT_URL + url
+        data = _prepare_request(data, token)
+
+    return url, data, headers
+
+
+def _prepare_hook(data, token):
+    if isinstance(data, events.Message):
+        data = data.serialize(attachments_as_json=False)
+
     if not data:
         data = {'token': token}
     elif 'token' not in data:
         data['token'] = token
 
-    if isinstance(url, methods):
-        url = url.value[0]
-        body = data
-    elif url.startswith('https://hooks.slack.com'):
-        body = json.dumps(data)
-    elif not url.startswith(ROOT_URL):
-        url = ROOT_URL + url
-        body = data
-    else:
-        body = data
+    return json.dumps(data)
 
-    return url, body, headers
+
+def _prepare_request(data, token):
+    if isinstance(data, events.Message):
+        data = data.serialize(attachments_as_json=True)
+
+    if not data:
+        data = {'token': token}
+    elif 'token' not in data:
+        data['token'] = token
+
+    return data
 
 
 def decode_response(status, headers, body):

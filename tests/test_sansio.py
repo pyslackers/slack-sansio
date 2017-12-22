@@ -1,8 +1,9 @@
 import time
+import json
 import pytest
 import logging
 
-from slack import sansio, exceptions, methods, events
+from slack import sansio, exceptions, methods
 
 
 class TestRequest:
@@ -12,42 +13,63 @@ class TestRequest:
         assert body == {'token': token}
         assert headers == {}
 
-    def test_prepare_request_urls(self):
-        url1, _, _ = sansio.prepare_request(methods.AUTH_TEST, {}, {}, {}, '')
-        url2, _, _ = sansio.prepare_request('auth.test', {}, {}, {}, '')
-        url3, _, _ = sansio.prepare_request('https://slack.com/api/auth.test', {}, {}, {}, '')
+    @pytest.mark.parametrize('url', (methods.AUTH_TEST, 'auth.test', 'https://slack.com/api/auth.test'))
+    def test_prepare_request_urls(self, url):
+        clean_url, _, _ = sansio.prepare_request(url, {}, {}, {}, '')
+        assert clean_url == 'https://slack.com/api/auth.test'
 
-        assert url1 == url2 == url3 == 'https://slack.com/api/auth.test'
+    def test_prepare_request_url_hook(self):
+        clean_url, _, _ = sansio.prepare_request('https://hooks.slack.com/T0000000/aczvrfver', {}, {}, {}, '')
+        assert clean_url == 'https://hooks.slack.com/T0000000/aczvrfver'
 
-    def test_prepare_request_body(self, token):
-        data1 = {'hello': 'world'}
-        data2 = data1.copy()
-        data3 = data2.copy()
+    @pytest.mark.parametrize('payload,result', (
+        ({'foo': 'bar'}, {'foo': 'bar', 'token': 'abcdefg'}),
+        (
+            {'foo': 'bar', 'attachements': [{'a': 'b'}]},
+            {'foo': 'bar', 'token': 'abcdefg', 'attachements': [{'a': 'b'}]}
+        ),
+    ))
+    def test_prepare_request_body(self, token, payload, result):
+        _, body, _ = sansio.prepare_request(methods.AUTH_TEST, payload, {}, {}, token)
+        assert body == result
 
-        _, body1, _ = sansio.prepare_request(methods.AUTH_TEST, data1, {}, {}, token)
-        _, body2, _ = sansio.prepare_request('https://hooks.slack.com/abcdefg', data2, {}, {}, token)
-        _, body3, _ = sansio.prepare_request('', data3, {}, {}, token)
+    @pytest.mark.parametrize('payload,result', (
+        (
+            {'foo': 'bar'}, '{"foo": "bar", "token": "abcdefg"}'),
+        (
+            {'foo': 'bar', 'attachements': [{'a': 'b'}]},
+            '{"foo": "bar", "attachements": [{"a": "b"}], "token": "abcdefg"}'
+        ),
+    ))
+    def test_prepare_request_body_hook(self, token, payload, result):
+        _, body, _ = sansio.prepare_request('https://hooks.slack.com/abcdefg', payload, {}, {}, token)
+        assert body == result
 
-        assert body1 == {'hello': 'world', 'token': token}
-        assert body2 == '{"hello": "world", "token": "' + token + '"}'
-        assert body3 == {'hello': 'world', 'token': token}
+    def test_prepare_request_body_message(self, token, message):
+        _, body, _ = sansio.prepare_request(methods.AUTH_TEST, message, {}, {}, token)
 
-    def test_prepare_request_headers(self):
-        headers = {'hello': 'world', 'python': '3.7'}
-        global_headers = {'hello': 'python', 'sans': 'I/O'}
+        assert isinstance(body, dict)
+        assert isinstance(body.get('attachments', ''), str)
+        assert body['token'] == token
 
-        _, _, prepared_header = sansio.prepare_request('', {}, headers, {}, '')
-        _, _, prepared_header_with_global = sansio.prepare_request('', {}, headers, global_headers, '')
+    def test_prepare_request_body_message_hook(self, token, message):
+        _, body, _ = sansio.prepare_request('https://hooks.slack.com/abcdefg', message, {}, {}, token)
 
-        assert prepared_header == {'hello': 'world', 'python': '3.7'}
-        assert prepared_header_with_global == {'hello': 'world', 'sans': 'I/O', 'python': '3.7'}
+        assert isinstance(body, str)
 
-    def test_prepare_request_serialize_message(self):
-        msg = events.Message()
-        msg['text'] = 'hello world'
+        data = json.loads(body)
+        assert isinstance(data.get('attachments', []), list)
+        assert data['token'] == token
 
-        _, data, _ = sansio.prepare_request('', msg, {}, {}, '')
-        assert data == {'token': '', 'text': 'hello world'}
+    @pytest.mark.parametrize('headers,global_headers,result', (
+        ({'foo': 'bar', 'py': '3.7'}, {}, {'foo': 'bar', 'py': '3.7'}),
+        ({'foo': 'bar', 'py': '3.7'}, {'sans': 'I/O'}, {'foo': 'bar', 'py': '3.7', 'sans': 'I/O'}),
+        ({'foo': 'bar', 'py': '3.7'}, {'foo': 'baz', 'sans': 'I/O'}, {'foo': 'bar', 'py': '3.7', 'sans': 'I/O'})
+
+    ))
+    def test_prepare_request_headers(self, headers, global_headers, result):
+        _, _, headers = sansio.prepare_request('', {}, headers, global_headers, '')
+        assert headers == result
 
     def test_find_iteration(self):
         itermode, iterkey = sansio.find_iteration(methods.CHANNELS_LIST)
