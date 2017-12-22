@@ -1,3 +1,4 @@
+import json
 import logging
 
 from collections import defaultdict, MutableMapping
@@ -23,10 +24,10 @@ class Action(MutableMapping):
         self.action = raw_action
 
         if verification_token and self.action['token'] != verification_token:
-            raise exceptions.FailedVerification(self.action['token'], self.action['team_id'])
+            raise exceptions.FailedVerification(self.action['token'], self.action['team']['id'])
 
-        if team_id and self.action['team_id'] != team_id:
-            raise exceptions.FailedVerification(self.action['token'], self.action['team_id'])
+        if team_id and self.action['team']['id'] != team_id:
+            raise exceptions.FailedVerification(self.action['token'], self.action['team']['id'])
 
     def __getitem__(self, item):
         return self.action[item]
@@ -46,25 +47,35 @@ class Action(MutableMapping):
     def __repr__(self):
         return str(self.action)
 
+    @classmethod
+    def from_http(cls, payload, verification_token=None, team_id=None):
+        action = json.loads(payload['payload'])
+        return cls(action, verification_token=verification_token, team_id=team_id)
+
 
 class Router:
     """
     When creating a slack applications you can only set one action url. This provide a routing mechanism for the
-    incoming actions, based on their `callback_id`, to one or more handlers.
+    incoming actions, based on their `callback_id` and the action name, to one or more handlers.
     """
     def __init__(self):
         self._routes = defaultdict(dict)
 
-    def register(self, callback_id, handler):
+    def register(self, callback_id, handler, name='*'):
         """
         Register a new handler for a specific :class:`slack.actions.Action` `callback_id`.
+        Optional routing based on the action name too.
 
         Args:
             callback_id: Callback_id the handler is interested in
             handler: Callback
+            name: Name of the action (optional).
         """
-        LOG.info('Registering %s to %s', callback_id, handler.__name__)
-        self._routes[callback_id].append(handler)
+        LOG.info('Registering %s, %s to %s', callback_id, name, handler.__name__)
+        if name not in self._routes[callback_id]:
+            self._routes[callback_id][name] = []
+
+        self._routes[callback_id][name].append(handler)
 
     def dispatch(self, action):
         """
@@ -76,7 +87,9 @@ class Router:
         Yields:
             handler
         """
-        LOG.debug('Dispatching action %s', action['callback_id'])
+        LOG.debug('Dispatching action %s, %s', action['callback_id'], action['actions'][0]['name'])
 
-        for callback in self._routes.get(action['callback_id']):
-            yield callback
+        if action['actions'][0]['name'] in self._routes[action['callback_id']]:
+            yield from self._routes[action['callback_id']][action['actions'][0]['name']]
+        else:
+            yield from self._routes[action['callback_id']].get('*', [])

@@ -34,6 +34,12 @@ class TestEvents:
             'event_time': 123456789
         }
 
+    def test_parsing_token(self, raw_event):
+        slack.events.Event.from_http(raw_event, verification_token='supersecuretoken')
+
+    def test_parsing_team_id(self, raw_event):
+        slack.events.Event.from_http(raw_event, team_id='T000AAA0A')
+
     def test_parsing_wrong_token(self, raw_event):
         with pytest.raises(slack.exceptions.FailedVerification):
             slack.events.Event.from_http(raw_event, verification_token='xxx')
@@ -148,7 +154,7 @@ class TestEventRouter:
         for h in event_router.dispatch(event):
             handlers.append(h)
         assert len(handlers) == 1
-        assert handlers[0] == handler
+        assert handlers[0] is handler
 
     @pytest.mark.parametrize('event', {**data.events.events}, indirect=True)
     def test_no_dispatch(self, event, event_router):
@@ -172,7 +178,7 @@ class TestEventRouter:
         for h in event_router.dispatch(event):
             handlers.append(h)
         assert len(handlers) == 1
-        assert handlers[0] == handler
+        assert handlers[0] is handler
 
     @pytest.mark.parametrize('event', {**data.events.events}, indirect=True)
     def test_multiple_dispatch(self, event, event_router):
@@ -193,8 +199,8 @@ class TestEventRouter:
         for h in event_router.dispatch(event):
             handlers.append(h)
         assert len(handlers) == 2
-        assert handlers[0] == handler
-        assert handlers[1] == handler_bis
+        assert handlers[0] is handler
+        assert handlers[1] is handler_bis
 
 
 class TestMessageRouter:

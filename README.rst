@@ -70,6 +70,11 @@ The library also provide an abstract base class on which to built I/O implementa
 Changelog
 ---------
 
+dev
+```
+
+* Bugfix for ``actions.Action`` and ``actions.Router``.
+
 0.3.0
 `````
 
