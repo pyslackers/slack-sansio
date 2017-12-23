@@ -49,6 +49,28 @@ class Methods(Enum):
     CHAT_UNFURL = (ROOT_URL + 'chat.unfurl', None, None)
     CHAT_UPDATE = (ROOT_URL + 'chat.update', None, None)
 
+    # conversations
+    CONVERSATIONS_ARCHIVE = (ROOT_URL + 'conversations.archive', None, None)
+    CONVERSATIONS_CLOSE = (ROOT_URL + 'conversations.close', None, None)
+    CONVERSATIONS_CREATE = (ROOT_URL + 'conversations.create', None, None)
+    CONVERSATIONS_HISTORY = (ROOT_URL + 'conversations.history', 'cursor', 'messages')
+    CONVERSATIONS_INFO = (ROOT_URL + 'conversations.info', None, None)
+    CONVERSATIONS_INVITE = (ROOT_URL + 'conversations.invite', None, None)
+    CONVERSATIONS_JOIN = (ROOT_URL + 'conversations.join', None, None)
+    CONVERSATIONS_KICK = (ROOT_URL + 'conversations.kick', None, None)
+    CONVERSATIONS_LEAVE = (ROOT_URL + 'conversations.leave', None, None)
+    CONVERSATIONS_LIST = (ROOT_URL + 'conversations.list', 'cursor', 'channels')
+    CONVERSATIONS_MEMBERS = (ROOT_URL + 'conversations.members', 'cursor', 'members')
+    CONVERSATIONS_OPEN = (ROOT_URL + 'conversations.open', None, None)
+    CONVERSATIONS_RENAME = (ROOT_URL + 'conversations.rename', None, None)
+    CONVERSATIONS_REPLIES = (ROOT_URL + 'conversations.replies', 'cursor', 'messages')
+    CONVERSATIONS_SET_PURPOSE = (ROOT_URL + 'conversations.setPurpose', None, None)
+    CONVERSATIONS_SET_TOPIC = (ROOT_URL + 'conversations.setTopic', None, None)
+    CONVERSATIONS_UNARCHIVE = (ROOT_URL + 'conversations.unarchive', None, None)
+
+    # dialog
+    DIALOG_OPEN = (ROOT_URL + 'dialog.open', None, None)
+
     # dnd
     DND_END_DND = (ROOT_URL + 'dnd.endDnd', None, None)
     DND_END_SNOOZE = (ROOT_URL + 'dnd.endSnooze', None, None)
