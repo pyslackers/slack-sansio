@@ -20,6 +20,20 @@ class TestActions:
         with pytest.raises(slack.exceptions.FailedVerification):
             slack.actions.Action.from_http(raw_action, team_id='xxx')
 
+    def test_mapping_access(self, action):
+        assert action['callback_id'] == 'test_action'
+
+    def test_mapping_delete(self, action):
+        assert action['callback_id'] == 'test_action'
+        del action['callback_id']
+        with pytest.raises(KeyError):
+            print(action['callback_id'])
+
+    def test_mapping_set(self, action):
+        assert action['callback_id'] == 'test_action'
+        action['callback_id'] = 'foo'
+        assert action['callback_id'] == 'foo'
+
 
 class TestActionRouter:
     def test_register(self, action_router):

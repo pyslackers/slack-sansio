@@ -63,6 +63,10 @@ class Router:
             command: Slash command
             handler: Callback
         """
+
+        if not command.startswith('/'):
+            command = f'/{command}'
+
         LOG.info('Registering %s to %s', command, handler.__name__)
         self._routes[command].append(handler)
 
@@ -77,5 +81,5 @@ class Router:
             handler
         """
         LOG.debug('Dispatching command %s', command['command'])
-        for callback in self._routes.get(command['command']):
+        for callback in self._routes[command['command']]:
             yield callback

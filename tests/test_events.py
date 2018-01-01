@@ -21,7 +21,7 @@ class TestEvents:
 
         assert isinstance(http_event, slack.events.Event)
         assert isinstance(rtm_event, slack.events.Event)
-        assert http_event.event == rtm_event.event
+        assert http_event.event == rtm_event.event == raw_event['event']
         assert rtm_event.metadata is None
         assert http_event.metadata == {
             'token': 'supersecuretoken',
@@ -47,6 +47,29 @@ class TestEvents:
     def test_parsing_wrong_team_id(self, raw_event):
         with pytest.raises(slack.exceptions.FailedVerification):
             slack.events.Event.from_http(raw_event, team_id='xxx')
+
+    @pytest.mark.parametrize('event', ['pin_added', 'reaction_added', 'simple', 'snippet', 'shared', 'threaded', 'bot',
+                                       'attachment'],
+                             indirect=True)
+    def test_mapping_access(self, event):
+        assert event['user'] == 'U000AA000'
+
+    @pytest.mark.parametrize('event', ['pin_added', 'reaction_added', 'simple', 'snippet', 'shared', 'threaded', 'bot',
+                                       'attachment'],
+                             indirect=True)
+    def test_mapping_delete(self, event):
+        assert event['user'] == 'U000AA000'
+        del event['user']
+        with pytest.raises(KeyError):
+            print(event['user'])
+
+    @pytest.mark.parametrize('event', ['pin_added', 'reaction_added', 'simple', 'snippet', 'shared', 'threaded', 'bot',
+                                       'attachment'],
+                             indirect=True)
+    def test_mapping_set(self, event):
+        assert event['user'] == 'U000AA000'
+        event['user'] = 'foo'
+        assert event['user'] == 'foo'
 
 
 class TestMessage:

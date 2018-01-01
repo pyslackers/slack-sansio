@@ -1,1 +1,1 @@
-from . import events, methods, actions  # noQa
+from . import events, methods, actions, commands  # noQa
