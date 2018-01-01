@@ -62,13 +62,14 @@ class TestABC:
                                          ]}, ), indirect=True)
     async def test_retry_rate_limited(self, client):
         client.sleep = asynctest.CoroutineMock(side_effect=client.sleep)
-        await client.query(methods.AUTH_TEST)
+        rep = await client.query(methods.AUTH_TEST)
         assert client._request.call_count == 2
         client.sleep.assert_called_once_with(1)
         assert client._request.call_args_list[0] == client._request.call_args_list[1]
         args, kwargs = client._request.call_args_list[0]
         assert args == ('POST', 'https://slack.com/api/auth.test', {}, {'token': 'abcdefg'})
         assert kwargs == {}
+        assert rep == {'ok': True}
 
     @pytest.mark.parametrize('client', ({'retry_when_rate_limit': True,
                                          '_request': [
