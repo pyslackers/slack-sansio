@@ -42,21 +42,20 @@ class SlackAPI(abc.ABC):
     async def sleep(self, seconds):
         pass
 
-    async def _make_query(self, url, data=None, headers=None):
+    async def _make_query(self, url, body, headers):
 
         while self.rate_limited and self.rate_limited > int(time.time()):
             await self.sleep(self.rate_limited - int(time.time()))
 
+        status, rep_body, rep_headers = await self._request('POST', url, headers, body)
+
         try:
-            url, body, headers = sansio.prepare_request(url=url, data=data, headers=headers,
-                                                        global_headers=self._headers, token=self._token)
-            status, body, headers = await self._request('POST', url, headers, body)
-            response_data = sansio.decode_response(status, headers, body)
+            response_data = sansio.decode_response(status, rep_headers, rep_body)
         except exceptions.RateLimited as rate_limited:
             if self._retry_when_rate_limit:
                 LOG.warning('Rate limited ! Waiting for %s seconds', rate_limited.retry_after)
                 self.rate_limited = int(time.time()) + rate_limited.retry_after
-                return await self._make_query(url, data, headers)
+                return await self._make_query(url, body, headers)
             else:
                 raise
         else:
@@ -77,7 +76,9 @@ class SlackAPI(abc.ABC):
 
         """
 
-        return await self._make_query(url, data, headers)
+        url, body, headers = sansio.prepare_request(url=url, data=data, headers=headers,
+                                                    global_headers=self._headers, token=self._token)
+        return await self._make_query(url, body, headers)
 
     async def iter(self, url, data=None, headers=None, *, limit=200, iterkey=None, itermode=None):
         """
@@ -103,7 +104,7 @@ class SlackAPI(abc.ABC):
         while True:
             data, iterkey, itermode = sansio.prepare_iter_request(url, data, iterkey=iterkey, itermode=itermode,
                                                                   limit=limit, itervalue=itervalue)
-            response_data = await self._make_query(url, data, headers)
+            response_data = await self.query(url, data, headers)
             itervalue = sansio.decode_iter_request(response_data)
             for item in response_data[iterkey]:
                 yield item

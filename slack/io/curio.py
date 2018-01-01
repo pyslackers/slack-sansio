@@ -6,6 +6,9 @@ from . import abc
 class SlackAPI(abc.SlackAPI):
     """
     `asks curio` implementation of :class:`slack.io.abc.SlackAPI`
+
+    Args:
+        session: HTTP session
     """
     def __init__(self, *, session, **kwargs):
         self._session = session

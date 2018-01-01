@@ -12,6 +12,9 @@ LOG = logging.getLogger(__name__)
 class SlackAPI(abc.SlackAPI):
     """
     `requests` implementation of :class:`slack.io.abc.SlackAPI`
+
+    Args:
+        session: HTTP session
     """
 
     def __init__(self, *, session, **kwargs):
@@ -36,23 +39,22 @@ class SlackAPI(abc.SlackAPI):
     def sleep(self, seconds):
         time.sleep(seconds)
 
-    def _make_query(self, url, data=None, headers=None):
+    def _make_query(self, url, body, headers):
 
         while self.rate_limited and self.rate_limited > int(time.time()):
-            self.sleep(1)
+            self.sleep(self.rate_limited - int(time.time()))
+
+        status, rep_body, rep_headers = self._request('POST', url, headers, body)
 
         try:
-            url, body, headers = sansio.prepare_request(url=url, data=data, headers=headers,
-                                                        global_headers=self._headers, token=self._token)
-            status, body, headers = self._request('POST', url, headers, body)
-            response_data = sansio.decode_response(status, headers, body)
+            response_data = sansio.decode_response(status, rep_headers, rep_body)
         except exceptions.RateLimited as rate_limited:
             if self._retry_when_rate_limit:
-                raise
-            else:
                 LOG.warning('Rate limited ! Waiting for %s seconds', rate_limited.retry_after)
                 self.rate_limited = int(time.time()) + rate_limited.retry_after
-                return self._make_query(url, data, headers)
+                return self._make_query(url, body, headers)
+            else:
+                raise
         else:
             self.rate_limited = False
             return response_data
@@ -70,7 +72,9 @@ class SlackAPI(abc.SlackAPI):
             dictionary of slack API response data
 
         """
-        return self._make_query(url, data, headers)
+        url, body, headers = sansio.prepare_request(url=url, data=data, headers=headers,
+                                                    global_headers=self._headers, token=self._token)
+        return self._make_query(url, body, headers)
 
     def iter(self, url, data=None, headers=None, *, limit=200, iterkey=None, itermode=None):
         """
@@ -96,7 +100,7 @@ class SlackAPI(abc.SlackAPI):
         while True:
             data, iterkey, itermode = sansio.prepare_iter_request(url, data, iterkey=iterkey, itermode=itermode,
                                                                   limit=limit, itervalue=itervalue)
-            response_data = self._make_query(url, data, headers)
+            response_data = self.query(url, data, headers)
             itervalue = sansio.decode_iter_request(response_data)
             for item in response_data[iterkey]:
                 yield item
