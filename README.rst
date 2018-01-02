@@ -73,6 +73,15 @@ Changelog
 dev
 ```
 
+0.3.2
+`````
+
+* Add conversation & dialog methods in Enum.
+* Fix ``not_authed`` when using rate limit retry.
+
+0.3.1
+`````
+
 * Bugfix for ``actions.Action`` and ``actions.Router``.
 * Bugfix in data serialization for response urls ``https://hooks.slack.com/``.
 
