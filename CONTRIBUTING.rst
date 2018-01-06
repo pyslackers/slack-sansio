@@ -20,7 +20,7 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality update the docs where appropriate.
 3. Use a `good commit message`_.
 
-If you have any issues contributing_git_hygiene_ might help.
+If you have any issues `contributing_git_hygiene`_ might help.
 
 .. _good commit message: https://github.com/spring-projects/spring-framework/blob/30bce7/CONTRIBUTING.md#format-commit-messages
 
@@ -66,22 +66,23 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `slack-sansio` for local development.
+Ready to contribute? Here's how to set up ``slack-sansio`` for local development.
 
-1. Fork the `slack-sansion` repo on github.
+1. Fork the ``slack-sansio`` repo on github.
 2. Clone your fork locally and add the upstream repository:
 
    .. code-block:: console
 
         $ git clone git@github.com:<username>/slack-sansio.git
         $ git remote add upstream https://github.com/pyslackers/slack-sansio.git
+        $ cd slack-sansion/
 
-3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development:
+3. Install your local copy into a virtualenv:
 
    .. code-block:: console
 
-        $ mkvirtualenv slack-sansion
-        $ cd slack-sansion/
+        $ python3 -m venv .env
+        $ source .env/bin/activate
 
 4. Install all dependencies
 
