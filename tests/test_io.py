@@ -1,8 +1,13 @@
 import json
 import pytest
+import aiohttp
+import datetime
 import asynctest
 
 from slack import methods, exceptions
+
+from slack.io.aiohttp import SlackAPI as SlackAPIAiohttp
+from slack.io.requests import SlackAPI as SlackAPIRequest
 
 
 @pytest.mark.asyncio
@@ -153,3 +158,132 @@ class TestABC:
         with pytest.raises(ValueError):
             async for _ in client.iter('https://slack.com/api/channels.list'):  # noQa: F841
                 pass
+
+
+@pytest.mark.parametrize('io_client', (SlackAPIRequest, ), indirect=True)
+class TestRequest:
+
+    def test_sleep(self, client):
+        delay = 1
+        start = datetime.datetime.now()
+        client.sleep(delay)
+        stop = datetime.datetime.now()
+        assert (stop - start) > datetime.timedelta(seconds=delay)
+
+    def test_query(self, client):
+        rep = client.query(methods.AUTH_TEST)
+        client._request.assert_called_once()
+        assert client._request.call_args[0][0] == 'POST'
+        assert client._request.call_args[0][1] == 'https://slack.com/api/auth.test'
+        assert client._request.call_args[0][2] == {}
+        assert client._request.call_args[0][3] == {'token': 'abcdefg'}
+
+        assert rep == {'ok': True}
+
+    def test_query_data(self, client, token):
+        data = {'hello': 'world'}
+
+        called_with = data.copy()
+        called_with['token'] = token
+
+        client.query(methods.AUTH_TEST, data)
+        assert client._request.call_args[0][3] == called_with
+
+    def test_query_headers(self, client):
+        custom_headers = {'hello': 'world'}
+        called_headers = custom_headers.copy()
+
+        client.query('https://hooks.slack.com/abcdef', headers=custom_headers)
+        assert client._request.call_args[0][2] == called_headers
+
+    @pytest.mark.parametrize('client', ({'retry_when_rate_limit': True,
+                                         '_request': [
+                                             {'status': 429, 'body': {"ok": False}, 'headers': {'Retry-After': 1}},
+                                             {},
+                                         ]},), indirect=True)
+    def test_retry_rate_limited(self, client):
+        client.sleep = asynctest.CoroutineMock(side_effect=client.sleep)
+        rep = client.query(methods.AUTH_TEST)
+        assert client._request.call_count == 2
+        client.sleep.assert_called_once_with(1)
+        assert client._request.call_args_list[0] == client._request.call_args_list[1]
+        args, kwargs = client._request.call_args_list[0]
+        assert args == ('POST', 'https://slack.com/api/auth.test', {}, {'token': 'abcdefg'})
+        assert kwargs == {}
+        assert rep == {'ok': True}
+
+    @pytest.mark.parametrize('client', ({'retry_when_rate_limit': True,
+                                         '_request': [
+                                             {'status': 429, 'body': {"ok": False}, 'headers': {'Retry-After': 1}},
+                                             {},
+                                         ]},), indirect=True)
+    def test_retry_rate_limited_with_body(self, client):
+        client.sleep = asynctest.CoroutineMock(side_effect=client.sleep)
+        client.query(methods.AUTH_TEST, data={'foo': 'bar'})
+        assert client._request.call_count == 2
+        client.sleep.assert_called_once_with(1)
+        assert client._request.call_args_list[0] == client._request.call_args_list[1]
+        args, kwargs = client._request.call_args_list[0]
+        assert args == ('POST', 'https://slack.com/api/auth.test', {}, {'foo': 'bar', 'token': 'abcdefg'})
+        assert kwargs == {}
+
+    @pytest.mark.parametrize('client', ({'retry_when_rate_limit': True,
+                                         '_request': [
+                                             {'status': 429, 'body': {"ok": False}, 'headers': {'Retry-After': 1}},
+                                             {},
+                                         ]},), indirect=True)
+    def test_retry_rate_limited_with_headers(self, client):
+        client.sleep = asynctest.CoroutineMock(side_effect=client.sleep)
+        client.query(methods.AUTH_TEST, headers={'foo': 'bar'})
+        assert client._request.call_count == 2
+        client.sleep.assert_called_once_with(1)
+        assert client._request.call_args_list[0] == client._request.call_args_list[1]
+        args, kwargs = client._request.call_args_list[0]
+        assert args == ('POST', 'https://slack.com/api/auth.test', {'foo': 'bar'}, {'token': 'abcdefg'})
+        assert kwargs == {}
+
+    @pytest.mark.parametrize('client', ({'retry_when_rate_limit': False,
+                                         '_request':
+                                             {'status': 429, 'body': {"ok": False}, 'headers': {'Retry-After': 2}}
+                                         },), indirect=True)
+    def test_raise_rate_limited(self, client):
+        with pytest.raises(exceptions.RateLimited):
+            client.query(methods.AUTH_TEST)
+
+    @pytest.mark.parametrize('client', ({'retry_when_rate_limit': False,
+                                         '_request': [
+                                             {'body': 'channels_iter'},
+                                             {'body': 'channels'}
+                                         ]}, ), indirect=True)
+    def test_iter(self, client, token, itercursor):
+        channels = 0
+        for _ in client.iter(methods.CHANNELS_LIST):  # noQa: F841
+            channels += 1
+
+        assert channels == 4
+        assert client._request.call_count == 2
+        client._request.assert_called_with(
+            'POST', 'https://slack.com/api/channels.list', {}, {'limit': 200, 'token': token, 'cursor': itercursor}
+        )
+
+
+class TestAiohttp:
+
+    @pytest.mark.asyncio
+    async def test_sleep(self, token):
+        delay = 1
+        start = datetime.datetime.now()
+        async with aiohttp.ClientSession() as session:
+            client = SlackAPIAiohttp(session=session, token=token)
+            await client.sleep(delay)
+        stop = datetime.datetime.now()
+        assert (stop - start) > datetime.timedelta(seconds=delay)
+
+    @pytest.mark.asyncio
+    async def test__request(self, token):
+        async with aiohttp.ClientSession() as session:
+            client = SlackAPIAiohttp(session=session, token=token)
+            response = await client._request('POST', 'https://slack.com/api//api.test', {}, {'token': token})
+
+        assert response[0] == 200
+        assert response[1] == b'{"ok":false,"error":"invalid_auth"}'
