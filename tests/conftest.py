@@ -2,9 +2,14 @@ import time
 import json
 import copy
 import pytest
+import requests
 import asynctest
+import functools
+
+from unittest.mock import Mock
 
 from slack.io.abc import SlackAPI
+from slack.io.requests import SlackAPI as SlackAPIRequest
 from slack.events import Event, EventRouter, MessageRouter
 from slack.actions import Action, Router as ActionRouter
 from slack.commands import Command, Router as CommandRouter
@@ -25,9 +30,17 @@ class FakeIO(SlackAPI):
         pass
 
 
+@pytest.fixture(params=(FakeIO, ))
+def io_client(request):
+
+    if request.param is SlackAPIRequest:
+        return functools.partial(request.param, session=requests.session())
+    return request.param
+
+
 @pytest.fixture(params=({'retry_when_rate_limit': True, 'token': TOKEN},
                         {'retry_when_rate_limit': False, 'token': TOKEN}))
-def client(request):
+def client(request, io_client):
     default_request = {'status': 200, 'body': {'ok': True},
                        'headers': {'content-type': 'application/json; charset=utf-8'}}
 
@@ -42,20 +55,27 @@ def client(request):
     if 'token' not in request.param:
         request.param['token'] = TOKEN
 
-    slackclient = FakeIO(**{k: v for k, v in request.param.items() if not k.startswith('_')})
+    slackclient = io_client(**{k: v for k, v in request.param.items() if not k.startswith('_')})
 
     if isinstance(request.param['_request'], dict):
-        slackclient._request = asynctest.CoroutineMock(return_value=(
+        return_value = (
             request.param['_request']['status'],
             json.dumps(request.param['_request']['body']).encode(),
             request.param['_request']['headers']
-        ))
+        )
+        if isinstance(slackclient, SlackAPIRequest):
+            slackclient._request = Mock(return_value=return_value)
+        else:
+            slackclient._request = asynctest.CoroutineMock(return_value=return_value)
     else:
         responses = [
             (response['status'], json.dumps(response['body']).encode(), response['headers'])
             for response in request.param['_request']
         ]
-        slackclient._request = asynctest.CoroutineMock(side_effect=responses)
+        if isinstance(slackclient, SlackAPIRequest):
+            slackclient._request = Mock(side_effect=responses)
+        else:
+            slackclient._request = asynctest.CoroutineMock(side_effect=responses)
 
     return slackclient
 

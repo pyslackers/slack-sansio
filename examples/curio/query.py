@@ -13,6 +13,7 @@ LOG = logging.getLogger(__name__)
 
 asks.init('curio')
 
+
 async def query(client):
 
     data = await client.query(slack.methods.AUTH_TEST)
