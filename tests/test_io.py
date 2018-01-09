@@ -1,9 +1,11 @@
 import json
 import asks
 import trio
+import time
 import slack
 import curio
 import pytest
+import asyncio
 import aiohttp
 import requests
 import datetime
@@ -166,6 +168,40 @@ class TestABC:
             async for _ in client.iter('https://slack.com/api/channels.list'):  # noQa: F841
                 pass
 
+    @pytest.mark.parametrize('client', ({'retry_when_rate_limit': False,
+                                         '_request': [
+                                             {'body': 'channels_iter'},
+                                             {'body': 'channels'}
+                                         ]}, ), indirect=True)
+    async def test_iter_wait(self, client):
+        client.sleep = asynctest.CoroutineMock()
+
+        channels = 0
+        async for _ in client.iter(methods.CHANNELS_LIST, minimum_time=2):  # noQa: F841
+            channels += 1
+
+        assert channels == 4
+        assert client._request.call_count == 2
+        assert client.sleep.call_count == 1
+        assert 2 > client.sleep.call_args[0][0] > 1.9
+
+    @pytest.mark.parametrize('client', ({'retry_when_rate_limit': False,
+                                         '_request': [
+                                             {'body': 'channels_iter'},
+                                             {'body': 'channels'}
+                                         ]}, ), indirect=True)
+    async def test_iter_no_wait(self, client):
+        client.sleep = asynctest.CoroutineMock()
+
+        channels = 0
+        async for _ in client.iter(methods.CHANNELS_LIST, minimum_time=1):  # noQa: F841
+            channels += 1
+            await asyncio.sleep(0.5)
+
+        assert channels == 4
+        assert client._request.call_count == 2
+        assert client.sleep.call_count == 0
+
     @pytest.mark.parametrize('client', ({'_request': [{'body': 'auth.test'}, {'body': 'users.info'}]}, ), indirect=True)
     async def test_find_bot_id(self, client):
         bot_id = await client._find_bot_id()
@@ -313,6 +349,40 @@ class TestNoAsync:
         client._request.assert_called_with(
             'POST', 'https://slack.com/api/channels.list', {}, {'limit': 200, 'token': token, 'cursor': itercursor}
         )
+
+    @pytest.mark.parametrize('client', ({'retry_when_rate_limit': False,
+                                         '_request': [
+                                             {'body': 'channels_iter'},
+                                             {'body': 'channels'}
+                                         ]}, ), indirect=True)
+    def test_iter_wait(self, client):
+        client.sleep = asynctest.CoroutineMock()
+
+        channels = 0
+        for _ in client.iter(methods.CHANNELS_LIST, minimum_time=2):  # noQa: F841
+            channels += 1
+
+        assert channels == 4
+        assert client._request.call_count == 2
+        assert client.sleep.call_count == 1
+        assert 2 > client.sleep.call_args[0][0] > 1.9
+
+    @pytest.mark.parametrize('client', ({'retry_when_rate_limit': False,
+                                         '_request': [
+                                             {'body': 'channels_iter'},
+                                             {'body': 'channels'}
+                                         ]}, ), indirect=True)
+    def test_iter_no_wait(self, client):
+        client.sleep = asynctest.CoroutineMock()
+
+        channels = 0
+        for _ in client.iter(methods.CHANNELS_LIST, minimum_time=1):  # noQa: F841
+            channels += 1
+            time.sleep(0.5)
+
+        assert channels == 4
+        assert client._request.call_count == 2
+        assert client.sleep.call_count == 0
 
     @pytest.mark.parametrize('client', ({'_request': [{'body': 'auth.test'}, {'body': 'users.info'}]}, ), indirect=True)
     def test_find_bot_id(self, client):
