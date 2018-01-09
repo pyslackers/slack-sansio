@@ -5,18 +5,18 @@ CHANNELS = {
             "id": "C00000001",
             "name": "fun",
             "created": 1360782804,
-            "creator": "U024BE7LH",
+            "creator": "U000AA000",
             "is_archived": False,
             "is_member": False,
             "num_members": 6,
             "topic": {
                 "value": "Fun times",
-                "creator": "U024BE7LV",
+                "creator": "U000AA000",
                 "last_set": 1369677212
             },
             "purpose": {
                 "value": "This channel is for fun",
-                "creator": "U024BE7LH",
+                "creator": "U000AA000",
                 "last_set": 1360782804
             }
         },
@@ -24,18 +24,18 @@ CHANNELS = {
             "id": "C00000002",
             "name": "fun",
             "created": 1360782804,
-            "creator": "U024BE7LH",
+            "creator": "U000AA000",
             "is_archived": False,
             "is_member": False,
             "num_members": 6,
             "topic": {
                 "value": "Fun times",
-                "creator": "U024BE7LV",
+                "creator": "U000AA000",
                 "last_set": 1369677212
             },
             "purpose": {
                 "value": "This channel is for fun",
-                "creator": "U024BE7LH",
+                "creator": "U000AA000",
                 "last_set": 1360782804
             }
         }
@@ -51,7 +51,75 @@ CHANNELS_ITER = {
     }
 }
 
+USERS_INFO = {
+    "ok": True,
+    "user": {
+        "id": "W012A3CDE",
+        "team_id": "T012AB3C4",
+        "name": "sirbotalotr",
+        "deleted": True,
+        "color": "9f69e7",
+        "real_name": "episod",
+        "tz": "America\/Los_Angeles",
+        "tz_label": "Pacific Daylight Time",
+        "tz_offset": -25200,
+        "profile": {
+            "avatar_hash": "ge3b51ca72de",
+            "status_text": "Print is dead",
+            "status_emoji": ":books:",
+            "real_name": "Egon Spengler",
+            "display_name": "spengler",
+            "real_name_normalized": "Egon Spengler",
+            "display_name_normalized": "spengler",
+            "email": "spengler@ghostbusters.example.com",
+            "image_24": "https:\/\/...\/avatar\/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "image_32": "https:\/\/...\/avatar\/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "image_48": "https:\/\/...\/avatar\/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "image_72": "https:\/\/...\/avatar\/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "image_192": "https:\/\/...\/avatar\/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "image_512": "https:\/\/...\/avatar\/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "team": "T012AB3C4",
+            "bot_id": "B0AAA0A00"
+        },
+        "is_admin": True,
+        "is_owner": False,
+        "is_primary_owner": False,
+        "is_restricted": False,
+        "is_ultra_restricted": False,
+        "is_bot": True,
+        "updated": 1502138686,
+        "is_app_user": False,
+        "has_2fa": False
+    }
+}
+
+AUTH_TEST = {
+    "ok": True,
+    "url": "https:\/\/testteam.slack.com\/",
+    "team": "TestTeam Workspace",
+    "user": "sirbotalot",
+    "team_id": "T12345678",
+    "user_id": "W12345678"
+}
+
+RTM_CONNECT = {
+    "ok": True,
+    "self": {
+        "id": "W012A3CDE",
+        "name": "sirbotalot"
+    },
+    "team": {
+        "domain": "testteam",
+        "id": "T12345678",
+        "name": "testteam"
+    },
+    "url": "wss:\/\/testteam.slack.com/012345678910"
+}
+
 payloads = {
     'channels_iter': CHANNELS_ITER,
-    'channels': CHANNELS
+    'channels': CHANNELS,
+    'users.info': USERS_INFO,
+    'auth.test': AUTH_TEST,
+    'rtm.connect': RTM_CONNECT
 }

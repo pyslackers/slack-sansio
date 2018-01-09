@@ -283,7 +283,6 @@ def discard_event(event, bot_id=None):
         elif 'message' in event and event['message'].get('bot_id') == bot_id:
             LOG.debug('Ignoring event: %s', event)
             return True
-
     return False
 
 

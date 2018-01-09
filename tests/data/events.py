@@ -1,3 +1,5 @@
+import json
+
 CHANNEL_DELETED = {
     'token': 'supersecuretoken',
     'team_id': 'T000AAA0A',
@@ -314,6 +316,15 @@ MESSAGE_EDIT_THREADED = {
     'event_time': 123456789
 }
 
+GOODBYE = {
+    "type": "goodbye"
+}
+
+RECONNECT_URL = {
+    "type": "reconnect_url",
+    "url": "wss:\/\/testteam.slack.com/012345678910"
+}
+
 events = {
     'channel_deleted': CHANNEL_DELETED,
     'pin_added': PIN_ADDED,
@@ -330,4 +341,12 @@ message = {
     'edit': MESSAGE_EDIT,
     'edit_threaded': MESSAGE_EDIT_THREADED,
     'bot_edit': MESSAGE_BOT_EDIT
+}
+
+rtm_events = {
+    'channel_deleted': json.dumps(CHANNEL_DELETED['event']),
+    'pin_added': json.dumps(PIN_ADDED['event']),
+    'goodbye': json.dumps(GOODBYE),
+    'bot': json.dumps(MESSAGE_BOT['event']),
+    'reconnect_url': json.dumps(RECONNECT_URL)
 }

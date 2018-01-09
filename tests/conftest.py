@@ -30,6 +30,22 @@ class FakeIO(SlackAPI):
         pass
 
 
+@pytest.fixture(params=(data.events.rtm_events.keys(),))
+def rtm_iterator(request):
+    async def events(url):
+        for key in request.param:
+            yield data.events.rtm_events[key]
+    return events
+
+
+@pytest.fixture(params=(data.events.rtm_events.keys(),))
+def rtm_iterator_non_async(request):
+    def events(url):
+        for key in request.param:
+            yield data.events.rtm_events[key]
+    return events
+
+
 @pytest.fixture(params=(FakeIO, ))
 def io_client(request):
 
