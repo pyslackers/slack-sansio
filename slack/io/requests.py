@@ -121,20 +121,29 @@ class SlackAPI(abc.SlackAPI):
 
         """
         while True:
-            if not bot_id:
-                auth = self.query(methods.AUTH_TEST)
-                user_info = self.query(methods.USERS_INFO, {'user': auth['user_id']})
-                bot_id = user_info['user']['profile']['bot_id']
-                LOG.info('BOT_ID is %s', bot_id)
-            if not url:
-                url = (self.query(methods.RTM_CONNECT))['url']
+            bot_id = bot_id or self._find_bot_id()
+            url = url or self._find_rtm_url()
+            for event in self._incoming_from_rtm(url, bot_id):
+                yield event
+            url = None
 
-            for data in self._rtm(url):
-                event = events.Event.from_rtm(json.loads(data))
-                if sansio.need_reconnect(event):
-                    break
-                elif sansio.discard_event(event, bot_id):
-                    if event['type'] == 'reconnect_url':
-                        url = event['url']
-                else:
-                    yield event
+    def _find_bot_id(self):
+        auth = self.query(methods.AUTH_TEST)
+        user_info = self.query(methods.USERS_INFO, {'user': auth['user_id']})
+        bot_id = user_info['user']['profile']['bot_id']
+        LOG.info('BOT_ID is %s', bot_id)
+        return bot_id
+
+    def _find_rtm_url(self):
+        response = self.query(methods.RTM_CONNECT)
+        return response['url']
+
+    def _incoming_from_rtm(self, url, bot_id):
+        for data in self._rtm(url):
+            event = events.Event.from_rtm(json.loads(data))
+            if sansio.need_reconnect(event):
+                break
+            elif sansio.discard_event(event, bot_id):
+                continue
+            else:
+                yield event

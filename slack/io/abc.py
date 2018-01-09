@@ -125,20 +125,48 @@ class SlackAPI(abc.ABC):
 
         """
         while True:
-            if not bot_id:
-                auth = await self.query(methods.AUTH_TEST)
-                user_info = await self.query(methods.USERS_INFO, {'user': auth['user_id']})
-                bot_id = user_info['user']['profile']['bot_id']
-                LOG.info('BOT_ID is %s', bot_id)
-            if not url:
-                url = (await self.query(methods.RTM_CONNECT))['url']
+            bot_id = bot_id or await self._find_bot_id()
+            url = url or await self._find_rtm_url()
+            async for event in self._incoming_from_rtm(url, bot_id):
+                yield event
+            url = None
 
-            async for data in self._rtm(url):
-                event = events.Event.from_rtm(json.loads(data))
-                if sansio.need_reconnect(event):
-                    break
-                elif sansio.discard_event(event, bot_id):
-                    if event['type'] == 'reconnect_url':
-                        url = event['url']
-                else:
-                    yield event
+    async def _find_bot_id(self):
+        """
+        Find the bot ID to discard incoming message from the bot itself.
+
+        Returns:
+            The bot ID
+        """
+        auth = await self.query(methods.AUTH_TEST)
+        user_info = await self.query(methods.USERS_INFO, {'user': auth['user_id']})
+        bot_id = user_info['user']['profile']['bot_id']
+        LOG.info('BOT_ID is %s', bot_id)
+        return bot_id
+
+    async def _find_rtm_url(self):
+        """
+        Call `rtm.connect` to find the websocket url.
+
+        Returns:
+            Url for websocket connection
+        """
+        response = await self.query(methods.RTM_CONNECT)
+        return response['url']
+
+    async def _incoming_from_rtm(self, url, bot_id):
+        """
+        Connect and discard incoming RTM event if necessary.
+
+        :param url: Websocket url
+        :param bot_id: Bot ID
+        :return: Incoming events
+        """
+        async for data in self._rtm(url):
+            event = events.Event.from_rtm(json.loads(data))
+            if sansio.need_reconnect(event):
+                break
+            elif sansio.discard_event(event, bot_id):
+                continue
+            else:
+                yield event

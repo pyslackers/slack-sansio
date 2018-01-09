@@ -1,11 +1,18 @@
 import json
+import asks
+import trio
+import slack
+import curio
 import pytest
 import aiohttp
+import requests
 import datetime
 import asynctest
 
 from slack import methods, exceptions
 
+from slack.io.trio import SlackAPI as SlackAPITrio
+from slack.io.curio import SlackAPI as SlackAPICurio
 from slack.io.aiohttp import SlackAPI as SlackAPIAiohttp
 from slack.io.requests import SlackAPI as SlackAPIRequest
 
@@ -159,17 +166,58 @@ class TestABC:
             async for _ in client.iter('https://slack.com/api/channels.list'):  # noQa: F841
                 pass
 
+    @pytest.mark.parametrize('client', ({'_request': [{'body': 'auth.test'}, {'body': 'users.info'}]}, ), indirect=True)
+    async def test_find_bot_id(self, client):
+        bot_id = await client._find_bot_id()
+        assert bot_id == 'B0AAA0A00'
+
+    @pytest.mark.parametrize('client', ({'_request': {'body': 'rtm.connect'}}, ), indirect=True)
+    async def test_find_rtm_url(self, client):
+        url = await client._find_rtm_url()
+        assert url == 'wss:\/\/testteam.slack.com/012345678910'
+
+    async def test_incoming_rtm(self, client, rtm_iterator):
+        client._rtm = rtm_iterator
+
+        events = []
+        async for event in client._incoming_from_rtm('wss:\/\/testteam.slack.com/012345678910', 'B0AAA0A00'):
+            assert isinstance(event, slack.events.Event)
+            events.append(event)
+        assert len(events) > 0
+
+    @pytest.mark.parametrize('rtm_iterator', (('goodbye', ), ), indirect=True)
+    async def test_incoming_rtm_reconnect(self, client, rtm_iterator):
+        client._rtm = rtm_iterator
+
+        events = []
+        async for event in client._incoming_from_rtm('wss:\/\/testteam.slack.com/012345678910', 'B0AAA0A00'):
+            events.append(event)
+
+        assert len(events) == 0
+
+    @pytest.mark.parametrize('rtm_iterator', (('bot', ), ), indirect=True)
+    async def test_incoming_rtm_discard_bot_id(self, client, rtm_iterator):
+        client._rtm = rtm_iterator
+
+        events = []
+        async for event in client._incoming_from_rtm('wss:\/\/testteam.slack.com/012345678910', 'B0AAA0A00'):
+            events.append(event)
+
+        assert len(events) == 0
+
+    @pytest.mark.parametrize('rtm_iterator', (('reconnect_url', ), ), indirect=True)
+    async def test_incoming_rtm_skip(self, client, rtm_iterator):
+        client._rtm = rtm_iterator
+
+        events = []
+        async for event in client._incoming_from_rtm('wss:\/\/testteam.slack.com/012345678910', 'B0AAA0A00'):
+            events.append(event)
+
+        assert len(events) == 0
+
 
 @pytest.mark.parametrize('io_client', (SlackAPIRequest, ), indirect=True)
-class TestRequest:
-
-    def test_sleep(self, client):
-        delay = 1
-        start = datetime.datetime.now()
-        client.sleep(delay)
-        stop = datetime.datetime.now()
-        assert (stop - start) > datetime.timedelta(seconds=delay)
-
+class TestNoAsync:
     def test_query(self, client):
         rep = client.query(methods.AUTH_TEST)
         client._request.assert_called_once()
@@ -266,9 +314,76 @@ class TestRequest:
             'POST', 'https://slack.com/api/channels.list', {}, {'limit': 200, 'token': token, 'cursor': itercursor}
         )
 
+    @pytest.mark.parametrize('client', ({'_request': [{'body': 'auth.test'}, {'body': 'users.info'}]}, ), indirect=True)
+    def test_find_bot_id(self, client):
+        bot_id = client._find_bot_id()
+        assert bot_id == 'B0AAA0A00'
+
+    @pytest.mark.parametrize('client', ({'_request': {'body': 'rtm.connect'}}, ), indirect=True)
+    def test_find_rtm_url(self, client):
+        url = client._find_rtm_url()
+        assert url == 'wss:\/\/testteam.slack.com/012345678910'
+
+    def test_incoming_rtm(self, client, rtm_iterator_non_async):
+        client._rtm = rtm_iterator_non_async
+
+        events = []
+        for event in client._incoming_from_rtm('wss:\/\/testteam.slack.com/012345678910', 'B0AAA0A00'):
+            assert isinstance(event, slack.events.Event)
+            events.append(event)
+        assert len(events) > 0
+
+    @pytest.mark.parametrize('rtm_iterator_non_async', (('goodbye', ), ), indirect=True)
+    def test_incoming_rtm_reconnect(self, client, rtm_iterator_non_async):
+        client._rtm = rtm_iterator_non_async
+
+        events = []
+        for event in client._incoming_from_rtm('wss:\/\/testteam.slack.com/012345678910', 'B0AAA0A00'):
+            events.append(event)
+
+        assert len(events) == 0
+
+    @pytest.mark.parametrize('rtm_iterator_non_async', (('bot', ), ), indirect=True)
+    def test_incoming_rtm_discard_bot_id(self, client, rtm_iterator_non_async):
+        client._rtm = rtm_iterator_non_async
+
+        events = []
+        for event in client._incoming_from_rtm('wss:\/\/testteam.slack.com/012345678910', 'B0AAA0A00'):
+            events.append(event)
+
+        assert len(events) == 0
+
+    @pytest.mark.parametrize('rtm_iterator_non_async', (('reconnect_url', ), ), indirect=True)
+    def test_incoming_rtm_skip(self, client, rtm_iterator_non_async):
+        client._rtm = rtm_iterator_non_async
+
+        events = []
+        for event in client._incoming_from_rtm('wss:\/\/testteam.slack.com/012345678910', 'B0AAA0A00'):
+            events.append(event)
+
+        assert len(events) == 0
+
+
+class TestRequest:
+    def test_sleep(self, token):
+        delay = 1
+        start = datetime.datetime.now()
+        with requests.Session() as session:
+            client = SlackAPIRequest(session=session, token=token)
+            client.sleep(delay)
+        stop = datetime.datetime.now()
+        assert datetime.timedelta(seconds=delay + 1) > (stop - start) > datetime.timedelta(seconds=delay)
+
+    def test__request(self, token):
+        with requests.Session() as session:
+            client = SlackAPIRequest(session=session, token=token)
+            response = client._request('POST', 'https://slack.com/api//api.test', {}, {'token': token})
+
+        assert response[0] == 200
+        assert response[1] == b'{"ok":false,"error":"invalid_auth"}'
+
 
 class TestAiohttp:
-
     @pytest.mark.asyncio
     async def test_sleep(self, token):
         delay = 1
@@ -277,7 +392,7 @@ class TestAiohttp:
             client = SlackAPIAiohttp(session=session, token=token)
             await client.sleep(delay)
         stop = datetime.datetime.now()
-        assert (stop - start) > datetime.timedelta(seconds=delay)
+        assert datetime.timedelta(seconds=delay + 1) > (stop - start) > datetime.timedelta(seconds=delay)
 
     @pytest.mark.asyncio
     async def test__request(self, token):
@@ -287,3 +402,55 @@ class TestAiohttp:
 
         assert response[0] == 200
         assert response[1] == b'{"ok":false,"error":"invalid_auth"}'
+
+
+class TestTrio:
+    def test_sleep(self, token):
+        asks.init('trio')
+
+        async def test_function():
+            delay = 1
+            start = datetime.datetime.now()
+            session = asks.Session()
+            client = SlackAPITrio(session=session, token=token)
+            await client.sleep(delay)
+            stop = datetime.datetime.now()
+            return datetime.timedelta(seconds=delay + 1) > (stop - start) > datetime.timedelta(seconds=delay)
+
+        assert trio.run(test_function)
+
+    def test__request(self, token):
+        asks.init('trio')
+
+        async def test_function():
+            session = asks.Session()
+            client = SlackAPITrio(session=session, token=token)
+            response = await client._request('POST', 'https://slack.com/api//api.test', {}, {'token': token})
+            return response[0], response[1]
+        assert trio.run(test_function) == (200, b'{"ok":false,"error":"invalid_auth"}')
+
+
+class TestCurio:
+    def test_sleep(self, token):
+        asks.init('curio')
+
+        async def test_function():
+            delay = 1
+            start = datetime.datetime.now()
+            session = asks.Session()
+            client = SlackAPICurio(session=session, token=token)
+            await client.sleep(delay)
+            stop = datetime.datetime.now()
+            return datetime.timedelta(seconds=delay + 1) > (stop - start) > datetime.timedelta(seconds=delay)
+
+        assert curio.run(test_function)
+
+    def test__request(self, token):
+        asks.init('curio')
+
+        async def test_function():
+            session = asks.Session()
+            client = SlackAPICurio(session=session, token=token)
+            response = await client._request('POST', 'https://slack.com/api//api.test', {}, {'token': token})
+            return response[0], response[1]
+        assert curio.run(test_function) == (200, b'{"ok":false,"error":"invalid_auth"}')
