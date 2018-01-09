@@ -73,6 +73,8 @@ Changelog
 dev
 ```
 
+* Add ``minimum_time`` argument to ``SlackAPI.iter`` in order to force a minimum elapsed time between two call to the API
+
 0.3.2
 `````
 

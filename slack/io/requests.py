@@ -76,7 +76,7 @@ class SlackAPI(abc.SlackAPI):
                                                     global_headers=self._headers, token=self._token)
         return self._make_query(url, body, headers)
 
-    def iter(self, url, data=None, headers=None, *, limit=200, iterkey=None, itermode=None):
+    def iter(self, url, data=None, headers=None, *, limit=200, iterkey=None, itermode=None, minimum_time=None):
         """
         Iterate over a slack API method supporting pagination
 
@@ -87,6 +87,8 @@ class SlackAPI(abc.SlackAPI):
             limit: Maximum number of results to return per call.
             iterkey: Key in response data to iterate over (required for url string).
             itermode: Iteration mode (required for url string) (one of `cursor`, `page` or `timeline`)
+            minimum_time: Minimum elapsed time (in seconds) between two calls to the Slack API (default to 0).
+             If not reached the client will sleep for the remaining time.
 
         Returns:
             Async iterator over `response_data[key]`
@@ -97,9 +99,15 @@ class SlackAPI(abc.SlackAPI):
         if not data:
             data = {}
 
+        last_request_time = None
         while True:
+            current_time = time.time()
+            if minimum_time and last_request_time and last_request_time + minimum_time > current_time:
+                self.sleep(last_request_time + minimum_time - current_time)
+
             data, iterkey, itermode = sansio.prepare_iter_request(url, data, iterkey=iterkey, itermode=itermode,
                                                                   limit=limit, itervalue=itervalue)
+            last_request_time = time.time()
             response_data = self.query(url, data, headers)
             itervalue = sansio.decode_iter_request(response_data)
             for item in response_data[iterkey]:
