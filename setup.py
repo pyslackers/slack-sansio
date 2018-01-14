@@ -61,9 +61,4 @@ setuptools.setup(
     license='MIT',
     url='https://github.com/pyslackers/slack-sansio',
     version=find_version(),
-    entry_points={
-        'pytest11': [
-            'slack = slack.tests.plugin',
-        ]
-    },
 )
