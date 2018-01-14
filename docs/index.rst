@@ -87,3 +87,4 @@ Navigation
    implementations/treq
    sansio
    exceptions
+   testing
