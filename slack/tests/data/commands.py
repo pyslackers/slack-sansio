@@ -1,3 +1,4 @@
+from enum import Enum
 
 no_text = {
     'token': 'supersecuretoken',
@@ -27,7 +28,14 @@ text = {
     'trigger_id': '000000000.0000000000.e1bb750705a2f472e4476c4228cf4784'
 }
 
-commands = {
-    'text': text,
-    'no_text': no_text,
-}
+
+class Commands(Enum):
+    """
+    List of available command for testing
+
+        - text
+        - no_text
+
+    """
+    text = text
+    no_text = no_text

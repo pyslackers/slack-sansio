@@ -1,3 +1,5 @@
+from enum import Enum
+
 CHANNELS = {
     "ok": True,
     "channels": [
@@ -116,10 +118,20 @@ RTM_CONNECT = {
     "url": "wss:\/\/testteam.slack.com/012345678910"
 }
 
-payloads = {
-    'channels_iter': CHANNELS_ITER,
-    'channels': CHANNELS,
-    'users.info': USERS_INFO,
-    'auth.test': AUTH_TEST,
-    'rtm.connect': RTM_CONNECT
-}
+
+class Methods(Enum):
+    """
+    List of available methods for testing
+
+        - channels
+        - channels_iter (channels with a cursor)
+        - users_info
+        - auth_test
+        - rtm_connect
+
+    """
+    channels_iter = CHANNELS_ITER
+    channels = CHANNELS
+    users_info = USERS_INFO
+    auth_test = AUTH_TEST
+    rtm_connect = RTM_CONNECT

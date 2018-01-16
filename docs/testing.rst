@@ -1,8 +1,12 @@
-=========================================
-:mod:`slack.tests.plugin` - Pytest plugin
-=========================================
+===========================================
+:mod:`slack.tests.plugin` - Pytest fixtures
+===========================================
 
 Slack-sansio provide a pytest plugin with some fixtures to facilitate testing of the slack API.
+
+
+Installation
+============
 
 To load the plugin add the snippet below to your ``conftest.py``.
 
@@ -11,11 +15,27 @@ To load the plugin add the snippet below to your ``conftest.py``.
     pytest_plugins = "slack.tests.plugin",
 
 
-The ``slack_actions``, ``slack_commands`` and ``slack_events`` fixtures return sample of incoming actions, commands or
-events coming from slack.
+Available fixtures
+==================
 
-.. code-block:: python
+.. automodule:: slack.tests.plugin
+   :members:
 
-    async def test_event(self, slack_event):
-        event = slack.events.Event.from_http(slack_event)
 
+Available data
+==============
+
+.. autoclass:: slack.tests.data.Events
+   :members:
+
+.. autoclass:: slack.tests.data.Messages
+   :members:
+
+.. autoclass:: slack.tests.data.Commands
+   :members:
+
+.. autoclass:: slack.tests.data.Actions
+   :members:
+
+.. autoclass:: slack.tests.data.Methods
+   :members:

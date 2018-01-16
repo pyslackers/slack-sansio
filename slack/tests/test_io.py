@@ -202,12 +202,12 @@ class TestABC:
         assert client._request.call_count == 2
         assert client.sleep.call_count == 0
 
-    @pytest.mark.parametrize('client', ({'_request': [{'body': 'auth.test'}, {'body': 'users.info'}]}, ), indirect=True)
+    @pytest.mark.parametrize('client', ({'_request': [{'body': 'auth_test'}, {'body': 'users_info'}]}, ), indirect=True)
     async def test_find_bot_id(self, client):
         bot_id = await client._find_bot_id()
         assert bot_id == 'B0AAA0A00'
 
-    @pytest.mark.parametrize('client', ({'_request': {'body': 'rtm.connect'}}, ), indirect=True)
+    @pytest.mark.parametrize('client', ({'_request': {'body': 'rtm_connect'}}, ), indirect=True)
     async def test_find_rtm_url(self, client):
         url = await client._find_rtm_url()
         assert url == 'wss:\/\/testteam.slack.com/012345678910'
@@ -384,12 +384,12 @@ class TestNoAsync:
         assert client._request.call_count == 2
         assert client.sleep.call_count == 0
 
-    @pytest.mark.parametrize('client', ({'_request': [{'body': 'auth.test'}, {'body': 'users.info'}]}, ), indirect=True)
+    @pytest.mark.parametrize('client', ({'_request': [{'body': 'auth_test'}, {'body': 'users_info'}]}, ), indirect=True)
     def test_find_bot_id(self, client):
         bot_id = client._find_bot_id()
         assert bot_id == 'B0AAA0A00'
 
-    @pytest.mark.parametrize('client', ({'_request': {'body': 'rtm.connect'}}, ), indirect=True)
+    @pytest.mark.parametrize('client', ({'_request': {'body': 'rtm_connect'}}, ), indirect=True)
     def test_find_rtm_url(self, client):
         url = client._find_rtm_url()
         assert url == 'wss:\/\/testteam.slack.com/012345678910'

@@ -1,5 +1,7 @@
 import json
 
+from enum import Enum
+
 CHANNEL_DELETED = {
     'token': 'supersecuretoken',
     'team_id': 'T000AAA0A',
@@ -77,6 +79,25 @@ MESSAGE_SIMPLE = {
         'type': 'message',
         'user': 'U000AA000',
         'text': 'hello world',
+        'ts': '123456789.000001',
+        'channel': 'C00000A00',
+        'event_ts': '123456789.000001'
+    },
+    'type': 'event_callback',
+    'authed_teams': ['T000AAA0A'],
+    'event_id': 'AAAAAAA',
+    'event_time': 123456789
+}
+
+
+MESSAGE_MENTION = {
+    'token': 'supersecuretoken',
+    'team_id': 'T000AAA0A',
+    'api_app_id': 'A0AAAAAAA',
+    'event': {
+        'type': 'message',
+        'user': 'U000AA000',
+        'text': '<@U0AAA0A00> hello world',
         'ts': '123456789.000001',
         'channel': 'C00000A00',
         'event_ts': '123456789.000001'
@@ -340,7 +361,8 @@ message = {
     'attachment': MESSAGE_ATTACHMENTS,
     'edit': MESSAGE_EDIT,
     'edit_threaded': MESSAGE_EDIT_THREADED,
-    'bot_edit': MESSAGE_BOT_EDIT
+    'bot_edit': MESSAGE_BOT_EDIT,
+    'mention': MESSAGE_MENTION
 }
 
 rtm_events = {
@@ -350,3 +372,45 @@ rtm_events = {
     'bot': json.dumps(MESSAGE_BOT['event']),
     'reconnect_url': json.dumps(RECONNECT_URL)
 }
+
+
+class Events(Enum):
+    """
+    List of available event for testing
+
+        - channel_deleted
+        - pin_added
+        - reaction_added
+
+    """
+    channel_deleted = CHANNEL_DELETED
+    pin_added = PIN_ADDED
+    reaction_added = REACTION_ADDED
+
+
+class Messages(Enum):
+    """
+    List of available message for testing
+
+        - simple
+        - snippet
+        - shared
+        - threaded
+        - bot
+        - bot_edit
+        - attachment
+        - edit
+        - edit_threaded
+        - mention
+
+    """
+    simple = MESSAGE_SIMPLE
+    snippet = MESSAGE_SNIPPET
+    shared = MESSAGE_SHARED
+    threaded = MESSAGE_THREADED
+    bot = MESSAGE_BOT
+    bot_edit = MESSAGE_BOT_EDIT
+    attachment = MESSAGE_ATTACHMENTS
+    edit = MESSAGE_EDIT
+    edit_threaded = MESSAGE_EDIT_THREADED
+    mention = MESSAGE_MENTION

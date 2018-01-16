@@ -56,7 +56,7 @@ def io_client(request):
 
 @pytest.fixture(params=({'retry_when_rate_limit': True, 'token': TOKEN},
                         {'retry_when_rate_limit': False, 'token': TOKEN}))
-def client(request, io_client):
+def client(request, io_client=FakeIO):
     default_request = {'status': 200, 'body': {'ok': True},
                        'headers': {'content-type': 'application/json; charset=utf-8'}}
 
@@ -67,6 +67,8 @@ def client(request, io_client):
     elif isinstance(request.param['_request'], list):
         for index, item in enumerate(request.param['_request']):
             request.param['_request'][index] = _default_response(item)
+    else:
+        raise ValueError('Invalid `_request` parameters: %s', request.param['_request'])
 
     if 'token' not in request.param:
         request.param['token'] = TOKEN
@@ -103,29 +105,32 @@ def _default_response(response):
     if 'content-type' not in response['headers']:
         response['headers']['content-type'] = default_response['headers']['content-type']
     if isinstance(response['body'], str):
-        response['body'] = copy.deepcopy(data.methods.payloads[response['body']])
+        response['body'] = copy.deepcopy(data.Methods[response['body']].value)
     return response
 
 
-@pytest.fixture(params={**data.events.events, **data.events.message})
+@pytest.fixture(params={**data.Events.__members__, **data.Messages.__members__})
 def raw_event(request):
     if isinstance(request.param, str):
-        if request.param in data.events.events:
-            return copy.deepcopy(data.events.events[request.param])
-        elif request.param in data.events.message:
-            return copy.deepcopy(data.events.message[request.param])
-        else:
-            raise ValueError(f'Event "{request.param}" not found')
+        try:
+            return copy.deepcopy(data.Events[request.param].value)
+        except KeyError:
+            pass
+        try:
+            return copy.deepcopy(data.Messages[request.param].value)
+        except KeyError:
+            pass
+        raise KeyError(f'Event "{request.param}" not found')
     else:
         return copy.deepcopy(request.param)
 
 
-@pytest.fixture(params={**data.events.events, **data.events.message})
+@pytest.fixture(params={**data.Events.__members__, **data.Messages.__members__})
 def event(request):
     return Event.from_http(raw_event(request))
 
 
-@pytest.fixture(params={**data.events.message})
+@pytest.fixture(params={**data.Messages.__members__})
 def message(request):
     return Event.from_http(raw_event(request))
 
@@ -150,18 +155,15 @@ def message_router():
     return MessageRouter()
 
 
-@pytest.fixture(params={**data.actions.actions})
+@pytest.fixture(params={**data.Actions.__members__})
 def action(request):
     return Action.from_http(raw_action(request))
 
 
-@pytest.fixture(params={**data.actions.actions})
+@pytest.fixture(params={**data.Actions.__members__})
 def raw_action(request):
     if isinstance(request.param, str):
-        if request.param in data.actions.actions:
-            return copy.deepcopy(data.actions.actions[request.param])
-        else:
-            raise ValueError(f'Raw action "{request.param}" not found')
+        return copy.deepcopy(data.Actions[request.param].value)
     else:
         return copy.deepcopy(request.param)
 
@@ -171,18 +173,15 @@ def action_router():
     return ActionRouter()
 
 
-@pytest.fixture(params={**data.commands.commands})
+@pytest.fixture(params={**data.Commands.__members__})
 def raw_command(request):
     if isinstance(request.param, str):
-        if request.param in data.commands.commands:
-            return copy.deepcopy(data.commands.commands[request.param])
-        else:
-            raise ValueError(f'Command "{request.param}" not found')
+        return copy.deepcopy(data.Commands[request.param].value)
     else:
         return copy.deepcopy(request.param)
 
 
-@pytest.fixture(params={**data.commands.commands})
+@pytest.fixture(params={**data.Commands.__members__})
 def command(request):
     return Command(raw_command(request))
 
