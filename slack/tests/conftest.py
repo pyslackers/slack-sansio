@@ -56,7 +56,7 @@ def io_client(request):
 
 @pytest.fixture(params=({'retry_when_rate_limit': True, 'token': TOKEN},
                         {'retry_when_rate_limit': False, 'token': TOKEN}))
-def client(request, io_client=FakeIO):
+def client(request, io_client):
     default_request = {'status': 200, 'body': {'ok': True},
                        'headers': {'content-type': 'application/json; charset=utf-8'}}
 

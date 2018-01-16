@@ -4,7 +4,7 @@ from . import data
 from .conftest import raw_event
 from .conftest import raw_action
 from .conftest import raw_command
-from .conftest import client
+from .conftest import client, FakeIO
 
 
 @pytest.fixture(params={**data.Events.__members__, **data.Messages.__members__})
@@ -87,7 +87,8 @@ def slack_client(request):
     .. code:: python
 
         @pytest.mark.asyncio
-        @pytest.mark.parametrize('slack_client', ({'_request': {'body': {'ok': True, 'hello': 'world'}}},), indirect=True)
+        @pytest.mark.parametrize('slack_client', ({'_request': {'body': {'ok': True, 'hello': 'world'}}},),
+         indirect=True)
         async def test_client(slack_client):
             data = await slack_client.query(slack.methods.AUTH_TEST)
             assert data == {'ok': True, 'hello': 'world'}
@@ -109,4 +110,4 @@ def slack_client(request):
             with pytest.raises(slack.exceptions.HTTPException):
                 await slack_client.query(slack.methods.AUTH_TEST)
     """
-    return client(request)
+    return client(request, io_client=FakeIO)

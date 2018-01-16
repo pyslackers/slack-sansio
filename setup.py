@@ -18,6 +18,7 @@ requires = {
 }
 
 requires['dev'].update(*requires.values())
+requires['doc'].update(requires['tests'])
 requires['full'].update(requires['requests'], requires['aiohttp'], requires['curio'], requires['trio'],
                         requires['treq'])
 
