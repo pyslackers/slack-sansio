@@ -1,5 +1,7 @@
 import json
 
+from enum import Enum
+
 button_ok = {
     'type': 'interactive_message',
     'actions': [
@@ -65,7 +67,14 @@ button_cancel = {
 raw_button_ok = {'payload': json.dumps(button_ok)}
 raw_button_cancel = {'payload': json.dumps(button_cancel)}
 
-actions = {
-    'button_ok': raw_button_ok,
-    'button_cancel': raw_button_cancel
-}
+
+class Actions(Enum):
+    """
+    List of available action for testing
+
+        - button_ok
+        - button_cancel
+
+    """
+    button_ok = raw_button_ok
+    button_cancel = raw_button_cancel
