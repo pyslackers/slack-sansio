@@ -73,8 +73,11 @@ Changelog
 dev
 ```
 
+0.3.4
+`````
+
 * Refactor tests
-* Create pytest plugin with ``slack_event``, ``slack_command`` and ``slack_action`` fixtures.
+* Create pytest plugin with useful fixtures.
 
 
 0.3.3
