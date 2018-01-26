@@ -73,7 +73,7 @@ class TestEvents:
 
 
 class TestMessage:
-    @pytest.mark.parametrize('raw_event', {**data.events.message}, indirect=True)
+    @pytest.mark.parametrize('raw_event', {**data.Messages.__members__}, indirect=True)
     def test_parsing(self, raw_event):
         http_event = slack.events.Event.from_http(raw_event)
         rtm_event = slack.events.Event.from_rtm(raw_event['event'])
@@ -164,7 +164,7 @@ class TestEventRouter:
         assert event_router._routes['channel_deleted']['*']['*'][0] is handler
         assert event_router._routes['channel_deleted']['*']['*'][1] is handler_bis
 
-    @pytest.mark.parametrize('event', {**data.events.events}, indirect=True)
+    @pytest.mark.parametrize('event', {**data.Events.__members__}, indirect=True)
     def test_dispatch(self, event, event_router):
         def handler():
             pass
@@ -173,13 +173,14 @@ class TestEventRouter:
         event_router.register('channel_deleted', handler)
         event_router.register('pin_added', handler)
         event_router.register('reaction_added', handler)
+        event_router.register('message', handler)
 
         for h in event_router.dispatch(event):
             handlers.append(h)
         assert len(handlers) == 1
         assert handlers[0] is handler
 
-    @pytest.mark.parametrize('event', {**data.events.events}, indirect=True)
+    @pytest.mark.parametrize('event', {**data.Events.__members__}, indirect=True)
     def test_no_dispatch(self, event, event_router):
         def handler():
             pass
@@ -188,7 +189,7 @@ class TestEventRouter:
         for h in event_router.dispatch(event):
             assert False
 
-    @pytest.mark.parametrize('event', {**data.events.events}, indirect=True)
+    @pytest.mark.parametrize('event', {**data.Events.__members__}, indirect=True)
     def test_dispatch_details(self, event, event_router):
         def handler():
             pass
@@ -197,13 +198,14 @@ class TestEventRouter:
         event_router.register('channel_deleted', handler, channel='C00000A00')
         event_router.register('pin_added', handler, channel='C00000A00')
         event_router.register('reaction_added', handler, reaction='sirbot')
+        event_router.register('message', handler, text=None)
 
         for h in event_router.dispatch(event):
             handlers.append(h)
         assert len(handlers) == 1
         assert handlers[0] is handler
 
-    @pytest.mark.parametrize('event', {**data.events.events}, indirect=True)
+    @pytest.mark.parametrize('event', {**data.Events.__members__}, indirect=True)
     def test_multiple_dispatch(self, event, event_router):
         def handler():
             pass
@@ -218,6 +220,8 @@ class TestEventRouter:
         event_router.register('channel_deleted', handler_bis)
         event_router.register('pin_added', handler_bis)
         event_router.register('reaction_added', handler_bis)
+        event_router.register('message', handler)
+        event_router.register('message', handler_bis)
 
         for h in event_router.dispatch(event):
             handlers.append(h)

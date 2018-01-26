@@ -254,7 +254,7 @@ class MessageRouter:
             handler
         """
         for match, endpoints in itertools.chain(self._routes[message['channel']].items(), self._routes['*'].items()):
-            if 'text' in message and match.search(message['text']):
+            if 'text' in message and message['text'] is not None and match.search(message['text']):
                 yield from endpoints
             elif 'message' in message and match.search(message['message']['text']):
                 yield from endpoints
