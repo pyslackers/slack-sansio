@@ -89,7 +89,6 @@ MESSAGE_SIMPLE = {
     'event_time': 123456789
 }
 
-
 MESSAGE_MENTION = {
     'token': 'supersecuretoken',
     'team_id': 'T000AAA0A',
@@ -337,6 +336,45 @@ MESSAGE_EDIT_THREADED = {
     'event_time': 123456789
 }
 
+MESSAGE_NONE_TEXT = {
+    'token': 'supersecuretoken',
+    'team_id': 'T000AAA0A',
+    'api_app_id': 'A0AAAAAAA',
+    'event': {
+        'bot_id': 'B092ZCBCY',
+        'attachments': [
+            {
+                'fallback': '''<https://twitter.com/ThePSF|@ThePSF>: JupyterCon 2018: Call For Proposals: '''
+                            '''<https://blog.jupyter.org/jupytercon-2018-call-for-proposal-87986014ee0b>. '''
+                            '''<https://twitter.com/ProjectJupyter|@ProjectJupyter>''''',
+                'ts': 1516989711, 'author_name': 'Python Software',
+                'author_link': 'https://twitter.com/ThePSF/status/956950323523932160',
+                'author_icon': 'https://pbs.twimg.com/profile_images/439154912719413248/pUBY5pVj_normal.png',
+                'author_subname': '@ThePSF',
+                'pretext': '<https://twitter.com/ThePSF/status/956950323523932160>',
+                'text': '''JupyterCon 2018: Call For Proposals: '''
+                        '''<https://blog.jupyter.org/jupytercon-2018-call-for-proposal-87986014ee0b>. '''
+                        '''<https://twitter.com/ProjectJupyter|@ProjectJupyter>''',
+                'service_name': 'twitter',
+                'service_url': 'https://twitter.com/',
+                'from_url': 'https://twitter.com/ThePSF/status/956950323523932160',
+                'id': 1, 'footer': 'Twitter',
+                'footer_icon': 'https://a.slack-edge.com/6e067/img/services/twitter_pixel_snapped_32.png'
+            }
+        ],
+        'text': None,
+        'type': 'message',
+        'subtype': 'bot_message',
+        'ts': '123456789.000002',
+        'channel': 'C00000A00',
+        'event_ts': '123456789.000002'
+    },
+    'type': 'event_callback',
+    'authed_teams': ['T000AAA0A'],
+    'event_id': 'AAAAAAA',
+    'event_time': 123456789
+}
+
 GOODBYE = {
     "type": "goodbye"
 }
@@ -344,33 +382,6 @@ GOODBYE = {
 RECONNECT_URL = {
     "type": "reconnect_url",
     "url": "wss:\/\/testteam.slack.com/012345678910"
-}
-
-events = {
-    'channel_deleted': CHANNEL_DELETED,
-    'pin_added': PIN_ADDED,
-    'reaction_added': REACTION_ADDED
-}
-
-message = {
-    'simple': MESSAGE_SIMPLE,
-    'snippet': MESSAGE_SNIPPET,
-    'shared': MESSAGE_SHARED,
-    'threaded': MESSAGE_THREADED,
-    'bot': MESSAGE_BOT,
-    'attachment': MESSAGE_ATTACHMENTS,
-    'edit': MESSAGE_EDIT,
-    'edit_threaded': MESSAGE_EDIT_THREADED,
-    'bot_edit': MESSAGE_BOT_EDIT,
-    'mention': MESSAGE_MENTION
-}
-
-rtm_events = {
-    'channel_deleted': json.dumps(CHANNEL_DELETED['event']),
-    'pin_added': json.dumps(PIN_ADDED['event']),
-    'goodbye': json.dumps(GOODBYE),
-    'bot': json.dumps(MESSAGE_BOT['event']),
-    'reconnect_url': json.dumps(RECONNECT_URL)
 }
 
 
@@ -386,6 +397,25 @@ class Events(Enum):
     channel_deleted = CHANNEL_DELETED
     pin_added = PIN_ADDED
     reaction_added = REACTION_ADDED
+    non_text = MESSAGE_NONE_TEXT
+
+
+class RTMEvents(Enum):
+    """
+    List of available rtm event for testing
+
+        - channel_deleted
+        - pin_added
+        - goodbye
+        - message_bot
+        - reconnect_url
+
+    """
+    channel_deleted = json.dumps(CHANNEL_DELETED['event'])
+    pin_added = json.dumps(PIN_ADDED['event'])
+    goodbye = json.dumps(GOODBYE)
+    message_bot = json.dumps(MESSAGE_BOT['event'])
+    reconnect_url = json.dumps(RECONNECT_URL)
 
 
 class Messages(Enum):
@@ -402,6 +432,7 @@ class Messages(Enum):
         - edit
         - edit_threaded
         - mention
+        - none_text
 
     """
     simple = MESSAGE_SIMPLE

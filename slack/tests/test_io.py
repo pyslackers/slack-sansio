@@ -231,7 +231,7 @@ class TestABC:
 
         assert len(events) == 0
 
-    @pytest.mark.parametrize('rtm_iterator', (('bot', ), ), indirect=True)
+    @pytest.mark.parametrize('rtm_iterator', (('message_bot', ), ), indirect=True)
     async def test_incoming_rtm_discard_bot_id(self, client, rtm_iterator):
         client._rtm = rtm_iterator
 
@@ -413,7 +413,7 @@ class TestNoAsync:
 
         assert len(events) == 0
 
-    @pytest.mark.parametrize('rtm_iterator_non_async', (('bot', ), ), indirect=True)
+    @pytest.mark.parametrize('rtm_iterator_non_async', (('message_bot', ), ), indirect=True)
     def test_incoming_rtm_discard_bot_id(self, client, rtm_iterator_non_async):
         client._rtm = rtm_iterator_non_async
 
