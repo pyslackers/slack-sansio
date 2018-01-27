@@ -365,9 +365,29 @@ MESSAGE_NONE_TEXT = {
         'text': None,
         'type': 'message',
         'subtype': 'bot_message',
-        'ts': '123456789.000002',
+        'ts': '123456789.000001',
         'channel': 'C00000A00',
-        'event_ts': '123456789.000002'
+        'event_ts': '123456789.000001'
+    },
+    'type': 'event_callback',
+    'authed_teams': ['T000AAA0A'],
+    'event_id': 'AAAAAAA',
+    'event_time': 123456789
+}
+
+MESSAGE_CHANNEL_TOPIC = {
+    'token': 'supersecuretoken',
+    'team_id': 'T000AAA0A',
+    'api_app_id': 'A0AAAAAAA',
+    'event': {
+        'user': 'U299GM524',
+        'topic': 'Company-wide announcements and work-based matter hello',
+        'text': '<@U299GM524> set the channel topic: Company-wide announcements and work-based matter hello',
+        'type': 'message',
+        'subtype': 'channel_topic',
+        'ts': '123456789.000001',
+        'channel': 'C00000A00',
+        'event_ts': '123456789.000001'
     },
     'type': 'event_callback',
     'authed_teams': ['T000AAA0A'],
@@ -433,6 +453,7 @@ class Messages(Enum):
         - edit_threaded
         - mention
         - none_text
+        - channel_topic
 
     """
     simple = MESSAGE_SIMPLE
@@ -445,3 +466,4 @@ class Messages(Enum):
     edit = MESSAGE_EDIT
     edit_threaded = MESSAGE_EDIT_THREADED
     mention = MESSAGE_MENTION
+    channel_topic = MESSAGE_CHANNEL_TOPIC

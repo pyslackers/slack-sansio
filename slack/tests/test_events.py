@@ -236,16 +236,24 @@ class TestMessageRouter:
             pass
 
         message_router.register('.*', handler)
-        assert len(message_router._routes['*'][re.compile('.*')]) == 1
-        assert message_router._routes['*'][re.compile('.*')][0] is handler
+        assert len(message_router._routes['*'][None][re.compile('.*')]) == 1
+        assert message_router._routes['*'][None][re.compile('.*')][0] is handler
 
     def test_register_channel(self, message_router):
         def handler():
             pass
 
         message_router.register('.*', handler, channel='C00000A00')
-        assert len(message_router._routes['C00000A00'][re.compile('.*')]) == 1
-        assert message_router._routes['C00000A00'][re.compile('.*')][0] is handler
+        assert len(message_router._routes['C00000A00'][None][re.compile('.*')]) == 1
+        assert message_router._routes['C00000A00'][None][re.compile('.*')][0] is handler
+
+    def test_register_subtype(self, message_router):
+        def handler():
+            pass
+
+        message_router.register('.*', handler, subtype='bot_message')
+        assert len(message_router._routes['*']['bot_message'][re.compile('.*')]) == 1
+        assert message_router._routes['*']['bot_message'][re.compile('.*')][0] is handler
 
     def test_multiple_register(self, message_router):
         def handler():
@@ -257,9 +265,9 @@ class TestMessageRouter:
         message_router.register('.*', handler)
         message_router.register('.*', handler_bis)
 
-        assert len(message_router._routes['*'][re.compile('.*')]) == 2
-        assert message_router._routes['*'][re.compile('.*')][0] is handler
-        assert message_router._routes['*'][re.compile('.*')][1] is handler_bis
+        assert len(message_router._routes['*'][None][re.compile('.*')]) == 2
+        assert message_router._routes['*'][None][re.compile('.*')][0] is handler
+        assert message_router._routes['*'][None][re.compile('.*')][1] is handler_bis
 
     def test_dispatch(self, message_router, message):
         def handler():
@@ -328,3 +336,28 @@ class TestMessageRouter:
         assert len(handlers) == 2
         assert handlers[0] is handler
         assert handlers[1] is handler_bis
+
+    def test_dispatch_channel(self, message_router, message):
+        def handler():
+            pass
+
+        message_router.register('hello', handler, channel='C00000A00')
+        handlers = list()
+        for h in message_router.dispatch(message):
+            handlers.append(h)
+
+        assert len(handlers) == 1
+        assert handlers[0] is handler
+
+    @pytest.mark.parametrize('message', ('channel_topic', ), indirect=True)
+    def test_dispatch_subtype(self, message_router, message):
+        def handler():
+            pass
+
+        message_router.register('.*', handler, subtype='channel_topic')
+        handlers = list()
+        for h in message_router.dispatch(message):
+            handlers.append(h)
+
+        assert len(handlers) == 1
+        assert handlers[0] is handler

@@ -73,6 +73,12 @@ Changelog
 dev
 ```
 
+0.3.5
+`````
+
+* Add ``subtype`` argument to ``events.MessageRouter.register``.
+* Fix routing bug for message with ``text=None``.
+
 0.3.4
 `````
 

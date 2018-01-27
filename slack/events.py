@@ -223,7 +223,7 @@ class MessageRouter:
     def __init__(self):
         self._routes = defaultdict(dict)
 
-    def register(self, pattern, handler, flags=0, channel='*'):
+    def register(self, pattern, handler, flags=0, channel='*', subtype=None):
         """
         Register a new handler for a specific :class:`slack.events.Message`.
 
@@ -234,14 +234,18 @@ class MessageRouter:
             handler: Callback
             flags: Regex flags.
             channel: Slack channel ID. Use * for any.
+            subtype: Message subtype
         """
         LOG.debug('Registering message endpoint "%s: %s"', pattern, handler)
         match = re.compile(pattern, flags)
 
-        if match in self._routes[channel]:
-            self._routes[channel][match].append(handler)
+        if subtype not in self._routes[channel]:
+            self._routes[channel][subtype] = dict()
+
+        if match in self._routes[channel][subtype]:
+            self._routes[channel][subtype][match].append(handler)
         else:
-            self._routes[channel][match] = [handler]
+            self._routes[channel][subtype][match] = [handler]
 
     def dispatch(self, message):
         """
@@ -253,8 +257,17 @@ class MessageRouter:
         Yields:
             handler
         """
-        for match, endpoints in itertools.chain(self._routes[message['channel']].items(), self._routes['*'].items()):
-            if 'text' in message and message['text'] is not None and match.search(message['text']):
-                yield from endpoints
-            elif 'message' in message and match.search(message['message']['text']):
-                yield from endpoints
+        if 'text' in message:
+            text = message['text'] or ''
+        elif 'message' in message:
+            text = message['message'].get('text', '')
+        else:
+            text = ''
+
+        msg_subtype = message.get('subtype')
+
+        for subtype, matchs in itertools.chain(self._routes[message['channel']].items(), self._routes['*'].items()):
+            if msg_subtype == subtype or subtype is None:
+                for match, endpoints in matchs.items():
+                    if match.search(text):
+                        yield from endpoints
