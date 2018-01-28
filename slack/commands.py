@@ -67,7 +67,7 @@ class Router:
         if not command.startswith('/'):
             command = f'/{command}'
 
-        LOG.info('Registering %s to %s', command, handler.__name__)
+        LOG.info('Registering %s to %s', command, handler)
         self._routes[command].append(handler)
 
     def dispatch(self, command):

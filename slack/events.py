@@ -177,7 +177,7 @@ class EventRouter:
             handler: Callback
             **detail: Additional key for routing
         """
-        LOG.info('Registering %s, %s to %s', event_type, detail, handler.__name__)
+        LOG.info('Registering %s, %s to %s', event_type, detail, handler)
         if len(detail) > 1:
             raise ValueError('Only one detail can be provided for additional routing')
         elif not detail:

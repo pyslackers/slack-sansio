@@ -71,7 +71,7 @@ class Router:
             handler: Callback
             name: Name of the action (optional).
         """
-        LOG.info('Registering %s, %s to %s', callback_id, name, handler.__name__)
+        LOG.info('Registering %s, %s to %s', callback_id, name, handler)
         if name not in self._routes[callback_id]:
             self._routes[callback_id][name] = []
 
