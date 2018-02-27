@@ -62,8 +62,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'slack-sansio'
-copyright = u"2017, Quentin Dawans"
-author = 'Quentin Dawans'
+copyright = u"2017, Pyslackers"
+author = 'Pyslackers'
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -229,7 +229,7 @@ latex_elements = {
 latex_documents = [
     (master_doc, 'slack-sansio.tex',
      'slack-sansio Documentation',
-     'Quentin Dawans', 'manual'),
+     'Pyslackers', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at

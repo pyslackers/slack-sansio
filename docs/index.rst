@@ -2,7 +2,7 @@
 slack-sansio | (a)sync library for using Slack's API
 ====================================================
 
-This projects aims to provide a simple library that abstract the slack API details.
+This project aims to provide a simple library that abstract the slack API details.
 
 Many slack libraries already exist for Python but none oriented towards asynchronous usage. While working on
 `Sir bot-a-lot <https://github.com/pyslackers/sir-bot-a-lot>`_ we figured the slack client could be useful for the
