@@ -27,7 +27,10 @@ class TestABC:
         client._request.assert_called_once()
         assert client._request.call_args[0][0] == 'POST'
         assert client._request.call_args[0][1] == 'https://slack.com/api/auth.test'
-        assert client._request.call_args[0][2] == {'Content-type': 'application/json', 'Authorization': f'Bearer {token}'}
+        assert client._request.call_args[0][2] == {
+            'Content-type': 'application/json',
+            'Authorization': f'Bearer {token}'
+        }
         assert client._request.call_args[0][3] == '{}'
 
         assert rep == {'ok': True}
@@ -263,7 +266,10 @@ class TestNoAsync:
         client._request.assert_called_once()
         assert client._request.call_args[0][0] == 'POST'
         assert client._request.call_args[0][1] == 'https://slack.com/api/auth.test'
-        assert client._request.call_args[0][2] == {'Content-type': 'application/json', 'Authorization': f'Bearer {token}'}
+        assert client._request.call_args[0][2] == {
+            'Content-type': 'application/json',
+            'Authorization': f'Bearer {token}'
+        }
         assert client._request.call_args[0][3] == '{}'
 
         assert rep == {'ok': True}
