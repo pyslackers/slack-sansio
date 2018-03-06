@@ -10,6 +10,13 @@ class TestRequest:
     def test_prepare_request(self, token):
         url, body, headers = sansio.prepare_request(methods.AUTH_TEST, {}, {}, {}, token)
         assert url == 'https://slack.com/api/auth.test'
+        assert body == '{}'
+        assert 'Authorization' in headers
+        assert 'Content-type' in headers
+        assert headers['Content-type'] == 'application/json'
+
+        url, body, headers = sansio.prepare_request(methods.AUTH_REVOKE, {}, {}, {}, token)
+        assert url == 'https://slack.com/api/auth.revoke'
         assert body == {'token': token}
         assert headers == {}
 
@@ -23,43 +30,74 @@ class TestRequest:
         assert clean_url == 'https://hooks.slack.com/T0000000/aczvrfver'
 
     @pytest.mark.parametrize('payload,result', (
-        ({'foo': 'bar'}, {'foo': 'bar', 'token': 'abcdefg'}),
+        ({'foo': 'bar'}, {'foo': 'bar'}),
         (
             {'foo': 'bar', 'attachements': [{'a': 'b'}]},
-            {'foo': 'bar', 'token': 'abcdefg', 'attachements': [{'a': 'b'}]}
+            {'foo': 'bar', 'attachements': [{'a': 'b'}]}
         ),
     ))
     def test_prepare_request_body(self, token, payload, result):
-        _, body, _ = sansio.prepare_request(methods.AUTH_TEST, payload, {}, {}, token)
+        _, body, headers = sansio.prepare_request(methods.AUTH_TEST, payload, {}, {}, token)
+
+        assert isinstance(body, str)
+        assert body == json.dumps(result)
+        assert 'Authorization' in headers
+        assert 'Content-type' in headers
+        assert headers['Content-type'] == 'application/json'
+
+        _, body, headers = sansio.prepare_request(methods.AUTH_REVOKE, payload, {}, {}, token)
+
+        result['token'] = token
+        assert isinstance(body, dict)
         assert body == result
 
     @pytest.mark.parametrize('payload,result', (
         (
-            {'foo': 'bar'}, '{"foo": "bar", "token": "abcdefg"}'),
+            {'foo': 'bar'}, '{"foo": "bar"}'),
         (
             {'foo': 'bar', 'attachements': [{'a': 'b'}]},
-            '{"foo": "bar", "attachements": [{"a": "b"}], "token": "abcdefg"}'
+            '{"foo": "bar", "attachements": [{"a": "b"}]}'
         ),
     ))
     def test_prepare_request_body_hook(self, token, payload, result):
-        _, body, _ = sansio.prepare_request('https://hooks.slack.com/abcdefg', payload, {}, {}, token)
+        _, body, headers = sansio.prepare_request('https://hooks.slack.com/abcdefg', payload, {}, {}, token)
+
         assert body == result
+        assert 'Authorization' in headers
+        assert 'Content-type' in headers
+        assert headers['Content-type'] == 'application/json'
 
     def test_prepare_request_body_message(self, token, message):
-        _, body, _ = sansio.prepare_request(methods.AUTH_TEST, message, {}, {}, token)
+        _, body, headers = sansio.prepare_request(methods.AUTH_TEST, message, {}, {}, token)
+
+        assert isinstance(body, str)
+        assert 'Authorization' in headers
+        assert 'Content-type' in headers
+        assert headers['Content-type'] == 'application/json'
+
+        _, body, headers = sansio.prepare_request(methods.AUTH_REVOKE, message, {}, {}, token)
 
         assert isinstance(body, dict)
         assert isinstance(body.get('attachments', ''), str)
         assert body['token'] == token
 
-    def test_prepare_request_body_message_hook(self, token, message):
-        _, body, _ = sansio.prepare_request('https://hooks.slack.com/abcdefg', message, {}, {}, token)
+    def test_prepare_request_body_message_force_json(self, token, message):
+        _, body, headers = sansio.prepare_request(methods.AUTH_REVOKE, message, {}, {}, token, as_json=True)
 
         assert isinstance(body, str)
+        assert 'Authorization' in headers
+        assert 'Content-type' in headers
+        assert headers['Content-type'] == 'application/json'
 
+    def test_prepare_request_message_hook(self, token, message):
+        _, body, headers = sansio.prepare_request('https://hooks.slack.com/abcdefg', message, {}, {}, token)
+
+        assert isinstance(body, str)
         data = json.loads(body)
         assert isinstance(data.get('attachments', []), list)
-        assert data['token'] == token
+        assert 'Authorization' in headers
+        assert 'Content-type' in headers
+        assert headers['Content-type'] == 'application/json'
 
     @pytest.mark.parametrize('headers,global_headers,result', (
         ({'foo': 'bar', 'py': '3.7'}, {}, {'foo': 'bar', 'py': '3.7'}),

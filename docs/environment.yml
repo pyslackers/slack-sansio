@@ -1,4 +1,3 @@
 name: slack-sansio-doc
 dependencies:
   - python=3.6
-

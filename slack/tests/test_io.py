@@ -22,13 +22,13 @@ from slack.io.requests import SlackAPI as SlackAPIRequest
 @pytest.mark.asyncio
 class TestABC:
 
-    async def test_query(self, client):
+    async def test_query(self, client, token):
         rep = await client.query(methods.AUTH_TEST)
         client._request.assert_called_once()
         assert client._request.call_args[0][0] == 'POST'
         assert client._request.call_args[0][1] == 'https://slack.com/api/auth.test'
-        assert client._request.call_args[0][2] == {}
-        assert client._request.call_args[0][3] == {'token': 'abcdefg'}
+        assert client._request.call_args[0][2] == {'Content-type': 'application/json', 'Authorization': f'Bearer {token}'}
+        assert client._request.call_args[0][3] == '{}'
 
         assert rep == {'ok': True}
 
@@ -47,8 +47,7 @@ class TestABC:
     async def test_query_data(self, client, token):
         data = {'hello': 'world'}
 
-        called_with = data.copy()
-        called_with['token'] = token
+        called_with = json.dumps(data.copy())
 
         await client.query(methods.AUTH_TEST, data)
         assert client._request.call_args[0][3] == called_with
@@ -57,13 +56,12 @@ class TestABC:
         data = {'hello': 'world'}
 
         called_with = data.copy()
-        called_with['token'] = token
 
         await client.query('https://hooks.slack.com/abcdef', data)
         assert client._request.call_args[0][3] == json.dumps(called_with)
 
-    async def test_query_headers(self, client):
-        custom_headers = {'hello': 'world'}
+    async def test_query_headers(self, client, token):
+        custom_headers = {'hello': 'world', 'Content-type': 'application/json', 'Authorization': f'Bearer {token}'}
         called_headers = custom_headers.copy()
 
         await client.query('https://hooks.slack.com/abcdef', headers=custom_headers)
@@ -74,14 +72,16 @@ class TestABC:
                                              {'status': 429, 'body': {"ok": False}, 'headers': {'Retry-After': 1}},
                                              {},
                                          ]}, ), indirect=True)
-    async def test_retry_rate_limited(self, client):
+    async def test_retry_rate_limited(self, client, token):
         client.sleep = asynctest.CoroutineMock(side_effect=client.sleep)
         rep = await client.query(methods.AUTH_TEST)
         assert client._request.call_count == 2
         client.sleep.assert_called_once_with(1)
         assert client._request.call_args_list[0] == client._request.call_args_list[1]
         args, kwargs = client._request.call_args_list[0]
-        assert args == ('POST', 'https://slack.com/api/auth.test', {}, {'token': 'abcdefg'})
+        assert args == ('POST', 'https://slack.com/api/auth.test',
+                        {'Content-type': 'application/json', 'Authorization': f'Bearer {token}'},
+                        '{}')
         assert kwargs == {}
         assert rep == {'ok': True}
 
@@ -90,14 +90,16 @@ class TestABC:
                                              {'status': 429, 'body': {"ok": False}, 'headers': {'Retry-After': 1}},
                                              {},
                                          ]}, ), indirect=True)
-    async def test_retry_rate_limited_with_body(self, client):
+    async def test_retry_rate_limited_with_body(self, client, token):
         client.sleep = asynctest.CoroutineMock(side_effect=client.sleep)
         await client.query(methods.AUTH_TEST, data={'foo': 'bar'})
         assert client._request.call_count == 2
         client.sleep.assert_called_once_with(1)
         assert client._request.call_args_list[0] == client._request.call_args_list[1]
         args, kwargs = client._request.call_args_list[0]
-        assert args == ('POST', 'https://slack.com/api/auth.test', {}, {'foo': 'bar', 'token': 'abcdefg'})
+        assert args == ('POST', 'https://slack.com/api/auth.test',
+                        {'Content-type': 'application/json', 'Authorization': f'Bearer {token}'},
+                        '{"foo": "bar"}')
         assert kwargs == {}
 
     @pytest.mark.parametrize('client', ({'retry_when_rate_limit': True,
@@ -105,14 +107,16 @@ class TestABC:
                                              {'status': 429, 'body': {"ok": False}, 'headers': {'Retry-After': 1}},
                                              {},
                                          ]}, ), indirect=True)
-    async def test_retry_rate_limited_with_headers(self, client):
+    async def test_retry_rate_limited_with_headers(self, client, token):
         client.sleep = asynctest.CoroutineMock(side_effect=client.sleep)
         await client.query(methods.AUTH_TEST, headers={'foo': 'bar'})
         assert client._request.call_count == 2
         client.sleep.assert_called_once_with(1)
         assert client._request.call_args_list[0] == client._request.call_args_list[1]
         args, kwargs = client._request.call_args_list[0]
-        assert args == ('POST', 'https://slack.com/api/auth.test', {'foo': 'bar'}, {'token': 'abcdefg'})
+        assert args == ('POST', 'https://slack.com/api/auth.test',
+                        {'foo': 'bar', 'Content-type': 'application/json', 'Authorization': f'Bearer {token}'},
+                        '{}')
         assert kwargs == {}
 
     @pytest.mark.parametrize('client', ({'retry_when_rate_limit': False,
@@ -254,27 +258,26 @@ class TestABC:
 
 @pytest.mark.parametrize('io_client', (SlackAPIRequest, ), indirect=True)
 class TestNoAsync:
-    def test_query(self, client):
+    def test_query(self, client, token):
         rep = client.query(methods.AUTH_TEST)
         client._request.assert_called_once()
         assert client._request.call_args[0][0] == 'POST'
         assert client._request.call_args[0][1] == 'https://slack.com/api/auth.test'
-        assert client._request.call_args[0][2] == {}
-        assert client._request.call_args[0][3] == {'token': 'abcdefg'}
+        assert client._request.call_args[0][2] == {'Content-type': 'application/json', 'Authorization': f'Bearer {token}'}
+        assert client._request.call_args[0][3] == '{}'
 
         assert rep == {'ok': True}
 
-    def test_query_data(self, client, token):
+    def test_query_data(self, client):
         data = {'hello': 'world'}
 
-        called_with = data.copy()
-        called_with['token'] = token
+        called_with = json.dumps(data.copy())
 
         client.query(methods.AUTH_TEST, data)
         assert client._request.call_args[0][3] == called_with
 
-    def test_query_headers(self, client):
-        custom_headers = {'hello': 'world'}
+    def test_query_headers(self, client, token):
+        custom_headers = {'hello': 'world', 'Content-type': 'application/json', 'Authorization': f'Bearer {token}'}
         called_headers = custom_headers.copy()
 
         client.query('https://hooks.slack.com/abcdef', headers=custom_headers)
@@ -285,14 +288,16 @@ class TestNoAsync:
                                              {'status': 429, 'body': {"ok": False}, 'headers': {'Retry-After': 1}},
                                              {},
                                          ]},), indirect=True)
-    def test_retry_rate_limited(self, client):
+    def test_retry_rate_limited(self, client, token):
         client.sleep = asynctest.CoroutineMock(side_effect=client.sleep)
         rep = client.query(methods.AUTH_TEST)
         assert client._request.call_count == 2
         client.sleep.assert_called_once_with(1)
         assert client._request.call_args_list[0] == client._request.call_args_list[1]
         args, kwargs = client._request.call_args_list[0]
-        assert args == ('POST', 'https://slack.com/api/auth.test', {}, {'token': 'abcdefg'})
+        assert args == ('POST', 'https://slack.com/api/auth.test',
+                        {'Content-type': 'application/json', 'Authorization': f'Bearer {token}'},
+                        '{}')
         assert kwargs == {}
         assert rep == {'ok': True}
 
@@ -301,14 +306,16 @@ class TestNoAsync:
                                              {'status': 429, 'body': {"ok": False}, 'headers': {'Retry-After': 1}},
                                              {},
                                          ]},), indirect=True)
-    def test_retry_rate_limited_with_body(self, client):
+    def test_retry_rate_limited_with_body(self, client, token):
         client.sleep = asynctest.CoroutineMock(side_effect=client.sleep)
         client.query(methods.AUTH_TEST, data={'foo': 'bar'})
         assert client._request.call_count == 2
         client.sleep.assert_called_once_with(1)
         assert client._request.call_args_list[0] == client._request.call_args_list[1]
         args, kwargs = client._request.call_args_list[0]
-        assert args == ('POST', 'https://slack.com/api/auth.test', {}, {'foo': 'bar', 'token': 'abcdefg'})
+        assert args == ('POST', 'https://slack.com/api/auth.test',
+                        {'Content-type': 'application/json', 'Authorization': f'Bearer {token}'},
+                        '{"foo": "bar"}')
         assert kwargs == {}
 
     @pytest.mark.parametrize('client', ({'retry_when_rate_limit': True,
@@ -316,14 +323,16 @@ class TestNoAsync:
                                              {'status': 429, 'body': {"ok": False}, 'headers': {'Retry-After': 1}},
                                              {},
                                          ]},), indirect=True)
-    def test_retry_rate_limited_with_headers(self, client):
+    def test_retry_rate_limited_with_headers(self, client, token):
         client.sleep = asynctest.CoroutineMock(side_effect=client.sleep)
         client.query(methods.AUTH_TEST, headers={'foo': 'bar'})
         assert client._request.call_count == 2
         client.sleep.assert_called_once_with(1)
         assert client._request.call_args_list[0] == client._request.call_args_list[1]
         args, kwargs = client._request.call_args_list[0]
-        assert args == ('POST', 'https://slack.com/api/auth.test', {'foo': 'bar'}, {'token': 'abcdefg'})
+        assert args == ('POST', 'https://slack.com/api/auth.test',
+                        {'foo': 'bar', 'Content-type': 'application/json', 'Authorization': f'Bearer {token}'},
+                        '{}')
         assert kwargs == {}
 
     @pytest.mark.parametrize('client', ({'retry_when_rate_limit': False,
