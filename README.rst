@@ -73,6 +73,9 @@ Changelog
 dev
 ```
 
+0.4.0
+`````
+
 * Support sending json for selected slack methods.
 
 0.3.5
