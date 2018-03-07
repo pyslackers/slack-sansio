@@ -62,7 +62,7 @@ class SlackAPI(abc.ABC):
             self.rate_limited = False
             return response_data
 
-    async def query(self, url, data=None, headers=None):
+    async def query(self, url, data=None, headers=None, as_json=None):
         """
         Query the slack API
 
@@ -70,13 +70,13 @@ class SlackAPI(abc.ABC):
             url: :class:`slack.methods` or url string
             data: JSON encodable MutableMapping
             headers: Custom headers
-
+            as_json: Post JSON to the slack API
         Returns:
             dictionary of slack API response data
 
         """
 
-        url, body, headers = sansio.prepare_request(url=url, data=data, headers=headers,
+        url, body, headers = sansio.prepare_request(url=url, data=data, headers=headers, as_json=as_json,
                                                     global_headers=self._headers, token=self._token)
         return await self._make_query(url, body, headers)
 

@@ -104,7 +104,7 @@ def parse_content_type(headers):
         return type_, encoding
 
 
-def prepare_request(url, data, headers, global_headers, token):
+def prepare_request(url, data, headers, global_headers, token, as_json=None):
     """
     Prepare outgoing request
 
@@ -116,45 +116,50 @@ def prepare_request(url, data, headers, global_headers, token):
         headers: Custom headers
         global_headers: Global headers
         token: Slack API token
-
+        as_json: Post JSON to the slack API
     Returns:
         :py:class:`tuple` (url, body, headers)
     """
+
+    if isinstance(url, methods):
+        as_json = as_json or url.value[3]
+        url = url.value[0]
+    else:
+        as_json = False
 
     if not headers:
         headers = {**global_headers}
     else:
         headers = {**global_headers, **headers}
 
-    if isinstance(url, methods):
-        url = url.value[0]
-        data = _prepare_request(data, token)
-    elif url.startswith(HOOK_URL):
-        data = _prepare_hook(data, token)
-    elif url.startswith(ROOT_URL):
-        data = _prepare_request(data, token)
+    if url.startswith(HOOK_URL):
+        data, headers = _prepare_json_request(data, token, headers)
+    elif url.startswith(ROOT_URL) and not as_json:
+        data = _prepare_form_encoded_request(data, token)
+    elif url.startswith(ROOT_URL) and as_json:
+        data, headers = _prepare_json_request(data, token, headers)
     else:
         url = ROOT_URL + url
-        data = _prepare_request(data, token)
+        data = _prepare_form_encoded_request(data, token)
 
     return url, data, headers
 
 
-def _prepare_hook(data, token):
+def _prepare_json_request(data, token, headers):
+    headers['Authorization'] = f'Bearer {token}'
+    headers['Content-type'] = 'application/json; charset=utf-8'
+
     if isinstance(data, events.Message):
-        data = data.serialize(attachments_as_json=False)
+        data = data.to_json()
+    else:
+        data = json.dumps(data or {})
 
-    if not data:
-        data = {'token': token}
-    elif 'token' not in data:
-        data['token'] = token
-
-    return json.dumps(data)
+    return data, headers
 
 
-def _prepare_request(data, token):
+def _prepare_form_encoded_request(data, token):
     if isinstance(data, events.Message):
-        data = data.serialize(attachments_as_json=True)
+        data = data.serialize()
 
     if not data:
         data = {'token': token}
