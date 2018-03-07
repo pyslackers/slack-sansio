@@ -59,15 +59,17 @@ class SlackAPI(abc.SlackAPI):
             self.rate_limited = False
             return response_data
 
-    def query(self, url, data=None, headers=None):
+    def query(self, url, data=None, headers=None, as_json=None):
         """
         Query the slack API
+
+        When using :class:`slack.methods` the request is made `as_json` if available
 
         Args:
             url: :class:`slack.methods` or url string
             data: JSON encodable MutableMapping
             headers: Custom headers
-
+            as_json: Post JSON to the slack API
         Returns:
             dictionary of slack API response data
 
@@ -76,9 +78,12 @@ class SlackAPI(abc.SlackAPI):
                                                     global_headers=self._headers, token=self._token)
         return self._make_query(url, body, headers)
 
-    def iter(self, url, data=None, headers=None, *, limit=200, iterkey=None, itermode=None, minimum_time=None):
+    def iter(self, url, data=None, headers=None, *, limit=200, iterkey=None, itermode=None, minimum_time=None,
+             as_json=None):
         """
         Iterate over a slack API method supporting pagination
+
+        When using :class:`slack.methods` the request is made `as_json` if available
 
         Args:
             url: :class:`slack.methods` or url string
@@ -89,6 +94,7 @@ class SlackAPI(abc.SlackAPI):
             itermode: Iteration mode (required for url string) (one of `cursor`, `page` or `timeline`)
             minimum_time: Minimum elapsed time (in seconds) between two calls to the Slack API (default to 0).
              If not reached the client will sleep for the remaining time.
+            as_json: Post JSON to the slack API
 
         Returns:
             Async iterator over `response_data[key]`
@@ -108,7 +114,7 @@ class SlackAPI(abc.SlackAPI):
             data, iterkey, itermode = sansio.prepare_iter_request(url, data, iterkey=iterkey, itermode=itermode,
                                                                   limit=limit, itervalue=itervalue)
             last_request_time = time.time()
-            response_data = self.query(url, data, headers)
+            response_data = self.query(url, data, headers, as_json)
             itervalue = sansio.decode_iter_request(response_data)
             for item in response_data[iterkey]:
                 yield item
