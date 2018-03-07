@@ -28,7 +28,7 @@ class TestABC:
         assert client._request.call_args[0][0] == 'POST'
         assert client._request.call_args[0][1] == 'https://slack.com/api/auth.test'
         assert client._request.call_args[0][2] == {
-            'Content-type': 'application/json',
+            'Content-type': 'application/json; charset=utf-8',
             'Authorization': f'Bearer {token}'
         }
         assert client._request.call_args[0][3] == '{}'
@@ -64,7 +64,9 @@ class TestABC:
         assert client._request.call_args[0][3] == json.dumps(called_with)
 
     async def test_query_headers(self, client, token):
-        custom_headers = {'hello': 'world', 'Content-type': 'application/json', 'Authorization': f'Bearer {token}'}
+        custom_headers = {'hello': 'world',
+                          'Content-type': 'application/json; charset=utf-8',
+                          'Authorization': f'Bearer {token}'}
         called_headers = custom_headers.copy()
 
         await client.query('https://hooks.slack.com/abcdef', headers=custom_headers)
@@ -83,7 +85,7 @@ class TestABC:
         assert client._request.call_args_list[0] == client._request.call_args_list[1]
         args, kwargs = client._request.call_args_list[0]
         assert args == ('POST', 'https://slack.com/api/auth.test',
-                        {'Content-type': 'application/json', 'Authorization': f'Bearer {token}'},
+                        {'Content-type': 'application/json; charset=utf-8', 'Authorization': f'Bearer {token}'},
                         '{}')
         assert kwargs == {}
         assert rep == {'ok': True}
@@ -101,7 +103,7 @@ class TestABC:
         assert client._request.call_args_list[0] == client._request.call_args_list[1]
         args, kwargs = client._request.call_args_list[0]
         assert args == ('POST', 'https://slack.com/api/auth.test',
-                        {'Content-type': 'application/json', 'Authorization': f'Bearer {token}'},
+                        {'Content-type': 'application/json; charset=utf-8', 'Authorization': f'Bearer {token}'},
                         '{"foo": "bar"}')
         assert kwargs == {}
 
@@ -118,7 +120,9 @@ class TestABC:
         assert client._request.call_args_list[0] == client._request.call_args_list[1]
         args, kwargs = client._request.call_args_list[0]
         assert args == ('POST', 'https://slack.com/api/auth.test',
-                        {'foo': 'bar', 'Content-type': 'application/json', 'Authorization': f'Bearer {token}'},
+                        {'foo': 'bar',
+                         'Content-type': 'application/json; charset=utf-8',
+                         'Authorization': f'Bearer {token}'},
                         '{}')
         assert kwargs == {}
 
@@ -267,7 +271,7 @@ class TestNoAsync:
         assert client._request.call_args[0][0] == 'POST'
         assert client._request.call_args[0][1] == 'https://slack.com/api/auth.test'
         assert client._request.call_args[0][2] == {
-            'Content-type': 'application/json',
+            'Content-type': 'application/json; charset=utf-8',
             'Authorization': f'Bearer {token}'
         }
         assert client._request.call_args[0][3] == '{}'
@@ -283,7 +287,9 @@ class TestNoAsync:
         assert client._request.call_args[0][3] == called_with
 
     def test_query_headers(self, client, token):
-        custom_headers = {'hello': 'world', 'Content-type': 'application/json', 'Authorization': f'Bearer {token}'}
+        custom_headers = {'hello': 'world',
+                          'Content-type': 'application/json; charset=utf-8',
+                          'Authorization': f'Bearer {token}'}
         called_headers = custom_headers.copy()
 
         client.query('https://hooks.slack.com/abcdef', headers=custom_headers)
@@ -302,7 +308,7 @@ class TestNoAsync:
         assert client._request.call_args_list[0] == client._request.call_args_list[1]
         args, kwargs = client._request.call_args_list[0]
         assert args == ('POST', 'https://slack.com/api/auth.test',
-                        {'Content-type': 'application/json', 'Authorization': f'Bearer {token}'},
+                        {'Content-type': 'application/json; charset=utf-8', 'Authorization': f'Bearer {token}'},
                         '{}')
         assert kwargs == {}
         assert rep == {'ok': True}
@@ -320,7 +326,7 @@ class TestNoAsync:
         assert client._request.call_args_list[0] == client._request.call_args_list[1]
         args, kwargs = client._request.call_args_list[0]
         assert args == ('POST', 'https://slack.com/api/auth.test',
-                        {'Content-type': 'application/json', 'Authorization': f'Bearer {token}'},
+                        {'Content-type': 'application/json; charset=utf-8', 'Authorization': f'Bearer {token}'},
                         '{"foo": "bar"}')
         assert kwargs == {}
 
@@ -337,7 +343,9 @@ class TestNoAsync:
         assert client._request.call_args_list[0] == client._request.call_args_list[1]
         args, kwargs = client._request.call_args_list[0]
         assert args == ('POST', 'https://slack.com/api/auth.test',
-                        {'foo': 'bar', 'Content-type': 'application/json', 'Authorization': f'Bearer {token}'},
+                        {'foo': 'bar',
+                         'Content-type': 'application/json; charset=utf-8',
+                         'Authorization': f'Bearer {token}'},
                         '{}')
         assert kwargs == {}
 

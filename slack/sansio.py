@@ -147,7 +147,7 @@ def prepare_request(url, data, headers, global_headers, token, as_json=None):
 
 def _prepare_json_request(data, token, headers):
     headers['Authorization'] = f'Bearer {token}'
-    headers['Content-type'] = 'application/json'
+    headers['Content-type'] = 'application/json; charset=utf-8'
 
     if isinstance(data, events.Message):
         data = data.to_json()

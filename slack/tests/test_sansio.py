@@ -13,7 +13,7 @@ class TestRequest:
         assert body == '{}'
         assert 'Authorization' in headers
         assert 'Content-type' in headers
-        assert headers['Content-type'] == 'application/json'
+        assert headers['Content-type'] == 'application/json; charset=utf-8'
 
         url, body, headers = sansio.prepare_request(methods.AUTH_REVOKE, {}, {}, {}, token)
         assert url == 'https://slack.com/api/auth.revoke'
@@ -43,7 +43,7 @@ class TestRequest:
         assert body == json.dumps(result)
         assert 'Authorization' in headers
         assert 'Content-type' in headers
-        assert headers['Content-type'] == 'application/json'
+        assert headers['Content-type'] == 'application/json; charset=utf-8'
 
         _, body, headers = sansio.prepare_request(methods.AUTH_REVOKE, payload, {}, {}, token)
 
@@ -65,7 +65,7 @@ class TestRequest:
         assert body == result
         assert 'Authorization' in headers
         assert 'Content-type' in headers
-        assert headers['Content-type'] == 'application/json'
+        assert headers['Content-type'] == 'application/json; charset=utf-8'
 
     def test_prepare_request_body_message(self, token, message):
         _, body, headers = sansio.prepare_request(methods.AUTH_TEST, message, {}, {}, token)
@@ -73,7 +73,7 @@ class TestRequest:
         assert isinstance(body, str)
         assert 'Authorization' in headers
         assert 'Content-type' in headers
-        assert headers['Content-type'] == 'application/json'
+        assert headers['Content-type'] == 'application/json; charset=utf-8'
 
         _, body, headers = sansio.prepare_request(methods.AUTH_REVOKE, message, {}, {}, token)
 
@@ -87,7 +87,7 @@ class TestRequest:
         assert isinstance(body, str)
         assert 'Authorization' in headers
         assert 'Content-type' in headers
-        assert headers['Content-type'] == 'application/json'
+        assert headers['Content-type'] == 'application/json; charset=utf-8'
 
     def test_prepare_request_message_hook(self, token, message):
         _, body, headers = sansio.prepare_request('https://hooks.slack.com/abcdefg', message, {}, {}, token)
@@ -97,7 +97,7 @@ class TestRequest:
         assert isinstance(data.get('attachments', []), list)
         assert 'Authorization' in headers
         assert 'Content-type' in headers
-        assert headers['Content-type'] == 'application/json'
+        assert headers['Content-type'] == 'application/json; charset=utf-8'
 
     @pytest.mark.parametrize('headers,global_headers,result', (
         ({'foo': 'bar', 'py': '3.7'}, {}, {'foo': 'bar', 'py': '3.7'}),
