@@ -65,3 +65,14 @@ class FailedVerification(Exception):
     def __init__(self, token, team_id):
         self.token = token
         self.team_id = team_id
+
+
+class UnknownActionType(Exception):
+    """
+    Raised for incoming action with unknown type
+
+    Attributes:
+        action: The incoming action
+    """
+    def __init__(self, action):
+        self.action = action

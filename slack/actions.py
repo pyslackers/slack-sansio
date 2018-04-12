@@ -66,6 +66,9 @@ class Router:
         Register a new handler for a specific :class:`slack.actions.Action` `callback_id`.
         Optional routing based on the action name too.
 
+        The name argument is useful for actions of type `interactive_message` to provide
+        a different handler for each individual action.
+
         Args:
             callback_id: Callback_id the handler is interested in
             handler: Callback
@@ -87,8 +90,19 @@ class Router:
         Yields:
             handler
         """
-        LOG.debug('Dispatching action %s, %s', action['callback_id'], action['actions'][0]['name'])
+        LOG.debug('Dispatching action %s, %s', action['type'], action['callback_id'])
 
+        if action['type'] == 'interactive_message':
+            yield from self._dispatch_interactive_message(action)
+        elif action['type'] == 'dialog_submission':
+            yield from self._dispatch_dialog_submission(action)
+        else:
+            raise exceptions.UnknownActionType(action)
+
+    def _dispatch_dialog_submission(self, action):
+        yield from self._routes[action['callback_id']].get('*', [])
+
+    def _dispatch_interactive_message(self, action):
         if action['actions'][0]['name'] in self._routes[action['callback_id']]:
             yield from self._routes[action['callback_id']][action['actions'][0]['name']]
         else:
