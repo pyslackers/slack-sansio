@@ -34,7 +34,10 @@ Available data
 .. autoclass:: slack.tests.data.Commands
    :members:
 
-.. autoclass:: slack.tests.data.Actions
+.. autoclass:: slack.tests.data.InteractiveMessage
+   :members:
+
+.. autoclass:: slack.tests.data.DialogSubmission
    :members:
 
 .. autoclass:: slack.tests.data.Methods

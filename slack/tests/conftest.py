@@ -155,15 +155,28 @@ def message_router():
     return MessageRouter()
 
 
-@pytest.fixture(params={**data.Actions.__members__})
+@pytest.fixture(params={**data.InteractiveMessage.__members__, **data.DialogSubmission.__members__})
 def action(request):
     return Action.from_http(raw_action(request))
 
 
-@pytest.fixture(params={**data.Actions.__members__})
+@pytest.fixture(params={**data.InteractiveMessage.__members__})
+def interactive_message(request):
+    return Action.from_http(raw_action(request))
+
+
+@pytest.fixture(params={**data.DialogSubmission.__members__})
+def dialog_submission(request):
+    return Action.from_http(raw_action(request))
+
+
+@pytest.fixture(params={**data.InteractiveMessage.__members__, **data.DialogSubmission.__members__})
 def raw_action(request):
     if isinstance(request.param, str):
-        return copy.deepcopy(data.Actions[request.param].value)
+        try:
+            return copy.deepcopy(data.InteractiveMessage[request.param].value)
+        except KeyError:
+            return copy.deepcopy(data.DialogSubmission[request.param].value)
     else:
         return copy.deepcopy(request.param)
 

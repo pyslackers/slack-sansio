@@ -85,7 +85,7 @@ class TestActionRouter:
         for h in action_router.dispatch(action):
             assert False
 
-    def test_dispatch_details(self, action, action_router):
+    def test_dispatch_details(self, interactive_message, action_router):
         def handler():
             pass
 
@@ -93,7 +93,7 @@ class TestActionRouter:
         action_router.register('test_action', handler, name='ok')
         action_router.register('test_action', handler, name='cancel')
 
-        for h in action_router.dispatch(action):
+        for h in action_router.dispatch(interactive_message):
             handlers.append(h)
         assert len(handlers) == 1
         assert handlers[0] is handler
@@ -115,3 +115,14 @@ class TestActionRouter:
         assert len(handlers) == 2
         assert handlers[0] is handler
         assert handlers[1] is handler_bis
+
+    def test_dispatch_unhandle_type(self, action_router):
+
+        action = {
+            'type': 'unhandled_type',
+            'callback_id': 'test_action'
+        }
+
+        with pytest.raises(slack.exceptions.UnknownActionType):
+            for _ in action_router.dispatch(action):
+                pass
