@@ -40,12 +40,13 @@ def slack_message(request):
     return raw_event(request)
 
 
-@pytest.fixture(params={**data.Actions.__members__})
+@pytest.fixture(params={**data.InteractiveMessage.__members__, **data.DialogSubmission.__members__})
 def slack_action(request):
     """
-    Fixture returning data sent by the slack API when using an interactive message.
+    Fixture returning data sent by the slack API when using an interactive message or dialog.
 
-    This fixture can be parametrized to return one or more available action from :class:`slack.tests.data.Actions`.
+    This fixture can be parametrized to return one or more available action
+    from :class:`slack.tests.data.InteractiveMessage` or :class:`slack.tests.data.DialogSubmission`.
 
     .. code:: python
 

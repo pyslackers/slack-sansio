@@ -73,6 +73,8 @@ Changelog
 dev
 ```
 
+* Support incoming action of type ``dialog_submission``.
+
 0.4.0
 `````
 
