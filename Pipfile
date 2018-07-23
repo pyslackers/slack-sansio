@@ -4,9 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+"e1839a8" = {path = ".", extras = ["dev"]}
 
 [dev-packages]
-tox = "*"
 
 [requires]
-python_version = "3.6"
+python_version = "3.7"
