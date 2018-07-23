@@ -4,7 +4,7 @@ import setuptools
 LONG_DESCRIPTION = pathlib.Path('README.rst').read_text('utf-8')
 
 requires = {
-    'install': [],
+    'install': ['attrs>=17.4.0'],
     'setup': ['pytest-runner'],
     'tests': ['flake8', 'pytest>=3.3.0', 'coverage', 'pytest-coverage', 'pytest-asyncio', 'asynctest'],
     'full': set(),
@@ -56,6 +56,7 @@ setuptools.setup(
         'Natural Language :: English',
         'Programming Language :: Python :: 3 :: Only',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
     author='Ovv',
     author_email='contact@ovv.wtf',

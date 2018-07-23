@@ -2,18 +2,27 @@ language: python
 
 matrix:
   fast_finish: true
+  include:
+    - python: 3.6
+    - python: 3.7
+      dist: xenial
+      sudo: true
+    - python: 3.7-dev
+      dist: xenial
+      sudo: true
+    - python: nightly
+      dist: xenial
+      sudo: true
   allow_failures:
     - python: nightly
+      dist: xenial
+      sudo: true
     - python: 3.7-dev
-    - python: 3.6-dev
-
-python:
-  - '3.6'
-  - 3.6-dev
-  - 3.7-dev
-  - nightly
+      dist: xenial
+      sudo: true
 
 install:
+  - pip freeze
   - pip install .[dev]
   - pip install coveralls
 
@@ -27,9 +36,6 @@ script:
 after_success:
   - coveralls
 
-before_deploy:
-  - pip install dothub
-
 deploy:
   - provider: pypi
     distributions: sdist bdist_wheel
@@ -39,11 +45,5 @@ deploy:
     on:
       repo: pyslackers/slack-sansio
       branch: master
-      python: '3.6'
+      python: '3.7'
       tags: true
-  - provider: script
-    script: "yes | dothub repo --owner pyslackers --repository slack-sansio push --input_file .github/.dothub.repo.yml"
-    on:
-      repo: pyslackers/slack-sansio
-      branch: master
-      python: '3.6'
