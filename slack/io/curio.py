@@ -10,6 +10,7 @@ class SlackAPI(abc.SlackAPI):
     Args:
         session: HTTP session
     """
+
     def __init__(self, *, session, **kwargs):
         self._session = session
         super().__init__(**kwargs)

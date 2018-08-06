@@ -1,6 +1,6 @@
 import logging
+from collections import MutableMapping, defaultdict
 
-from collections import defaultdict, MutableMapping
 from . import exceptions
 
 LOG = logging.getLogger(__name__)
@@ -21,11 +21,15 @@ class Command(MutableMapping):
     def __init__(self, raw_command, verification_token=None, team_id=None):
         self.command = raw_command
 
-        if verification_token and self.command['token'] != verification_token:
-            raise exceptions.FailedVerification(self.command['token'], self.command['team_id'])
+        if verification_token and self.command["token"] != verification_token:
+            raise exceptions.FailedVerification(
+                self.command["token"], self.command["team_id"]
+            )
 
-        if team_id and self.command['team_id'] != team_id:
-            raise exceptions.FailedVerification(self.command['token'], self.command['team_id'])
+        if team_id and self.command["team_id"] != team_id:
+            raise exceptions.FailedVerification(
+                self.command["token"], self.command["team_id"]
+            )
 
     def __getitem__(self, item):
         return self.command[item]
@@ -52,6 +56,7 @@ class Router:
     this class provide a routing mechanisms based on the command so that each command can define the same webhook
     url.
     """
+
     def __init__(self):
         self._routes = defaultdict(list)
 
@@ -64,10 +69,10 @@ class Router:
             handler: Callback
         """
 
-        if not command.startswith('/'):
-            command = f'/{command}'
+        if not command.startswith("/"):
+            command = f"/{command}"
 
-        LOG.info('Registering %s to %s', command, handler)
+        LOG.info("Registering %s to %s", command, handler)
         self._routes[command].append(handler)
 
     def dispatch(self, command):
@@ -80,6 +85,6 @@ class Router:
         Yields:
             handler
         """
-        LOG.debug('Dispatching command %s', command['command'])
-        for callback in self._routes[command['command']]:
+        LOG.debug("Dispatching command %s", command["command"])
+        for callback in self._routes[command["command"]]:
             yield callback

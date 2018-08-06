@@ -4,9 +4,32 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-"e1839a8" = {path = ".", extras = ["dev"]}
+requests = "*"
+websocket-client = "*"
+aiohttp = "*"
+curio = "*"
+asks = "*"
+treq = "*"
+trio = "*"
+contextvars = {version = "*", markers = "python_version == '3.6'"}
+immutables = {version = "*", markers = "python_version == '3.6'"}
 
 [dev-packages]
+"flake8" = "*"
+black = "*"
+isort = "*"
+tox = "*"
+sphinx = "*"
+sphinxcontrib-asyncio = "*"
+sphinxcontrib-napoleon = "*"
+pytest = "*"
+coverage = "*"
+pytest-coverage = "*"
+pytest-asyncio = "*"
+asynctest = "*"
 
 [requires]
 python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true

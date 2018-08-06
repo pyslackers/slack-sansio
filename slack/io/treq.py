@@ -1,6 +1,5 @@
 import treq
-
-from twisted.internet import reactor, defer
+from twisted.internet import defer, reactor
 from twisted.web.http_headers import Headers
 
 from . import abc
@@ -19,16 +18,16 @@ class SlackAPI(abc.SlackAPI):
 
         headers = Headers(
             {
-                k.encode('utf-8'): [v.encode('utf-8')]
+                k.encode("utf-8"): [v.encode("utf-8")]
                 for k, v in headers.items()
-                if k.lower() != 'content-length'
+                if k.lower() != "content-length"
             }
         )
 
         response = await treq.request(method, url, headers=headers, data=body)
 
         response_headers = {
-            k.decode('utf-8').lower(): v[0].decode('utf-8')
+            k.decode("utf-8").lower(): v[0].decode("utf-8")
             for k, v in response.headers.getAllRawHeaders()
         }
 

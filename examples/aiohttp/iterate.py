@@ -2,10 +2,10 @@ import os
 import sys
 import pprint
 import asyncio
-import aiohttp
 import logging
-import slack
 
+import aiohttp
+import slack
 from slack.io.aiohttp import SlackAPI
 
 logging.basicConfig(level=logging.INFO)
@@ -17,15 +17,16 @@ async def iterate(client):
     async for channel in client.iter(slack.methods.CHANNELS_LIST, limit=4):
         pprint.pprint(channel)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
 
     if len(sys.argv) > 1:
         TOKEN = sys.argv[1]
     else:
-        TOKEN = os.environ.get('SLACK_TOKEN')
+        TOKEN = os.environ.get("SLACK_TOKEN")
 
     if not TOKEN:
-        raise ValueError('No slack token provided !')
+        raise ValueError("No slack token provided !")
 
     loop = asyncio.get_event_loop()
     session = aiohttp.ClientSession(loop=loop)

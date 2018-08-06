@@ -1,10 +1,12 @@
-import time
 import json
+import time
 import logging
+
+import requests
 import websocket
 
 from . import abc
-from .. import sansio, exceptions, events, methods
+from .. import events, sansio, methods, exceptions
 
 LOG = logging.getLogger(__name__)
 
@@ -17,8 +19,8 @@ class SlackAPI(abc.SlackAPI):
         session: HTTP session
     """
 
-    def __init__(self, *, session, **kwargs):
-        self._session = session
+    def __init__(self, *, session=None, **kwargs):
+        self._session = session or requests.session()
         super().__init__(**kwargs)
 
     def _request(self, method, url, headers, body):
@@ -44,13 +46,15 @@ class SlackAPI(abc.SlackAPI):
         while self.rate_limited and self.rate_limited > int(time.time()):
             self.sleep(self.rate_limited - int(time.time()))
 
-        status, rep_body, rep_headers = self._request('POST', url, headers, body)
+        status, rep_body, rep_headers = self._request("POST", url, headers, body)
 
         try:
             response_data = sansio.decode_response(status, rep_headers, rep_body)
         except exceptions.RateLimited as rate_limited:
             if self._retry_when_rate_limit:
-                LOG.warning('Rate limited ! Waiting for %s seconds', rate_limited.retry_after)
+                LOG.warning(
+                    "Rate limited ! Waiting for %s seconds", rate_limited.retry_after
+                )
                 self.rate_limited = int(time.time()) + rate_limited.retry_after
                 return self._make_query(url, body, headers)
             else:
@@ -74,12 +78,27 @@ class SlackAPI(abc.SlackAPI):
             dictionary of slack API response data
 
         """
-        url, body, headers = sansio.prepare_request(url=url, data=data, headers=headers,
-                                                    global_headers=self._headers, token=self._token)
+        url, body, headers = sansio.prepare_request(
+            url=url,
+            data=data,
+            headers=headers,
+            global_headers=self._headers,
+            token=self._token,
+        )
         return self._make_query(url, body, headers)
 
-    def iter(self, url, data=None, headers=None, *, limit=200, iterkey=None, itermode=None, minimum_time=None,
-             as_json=None):
+    def iter(
+        self,
+        url,
+        data=None,
+        headers=None,
+        *,
+        limit=200,
+        iterkey=None,
+        itermode=None,
+        minimum_time=None,
+        as_json=None
+    ):
         """
         Iterate over a slack API method supporting pagination
 
@@ -108,11 +127,21 @@ class SlackAPI(abc.SlackAPI):
         last_request_time = None
         while True:
             current_time = time.time()
-            if minimum_time and last_request_time and last_request_time + minimum_time > current_time:
+            if (
+                minimum_time
+                and last_request_time
+                and last_request_time + minimum_time > current_time
+            ):
                 self.sleep(last_request_time + minimum_time - current_time)
 
-            data, iterkey, itermode = sansio.prepare_iter_request(url, data, iterkey=iterkey, itermode=itermode,
-                                                                  limit=limit, itervalue=itervalue)
+            data, iterkey, itermode = sansio.prepare_iter_request(
+                url,
+                data,
+                iterkey=iterkey,
+                itermode=itermode,
+                limit=limit,
+                itervalue=itervalue,
+            )
             last_request_time = time.time()
             response_data = self.query(url, data, headers, as_json)
             itervalue = sansio.decode_iter_request(response_data)
@@ -143,14 +172,14 @@ class SlackAPI(abc.SlackAPI):
 
     def _find_bot_id(self):
         auth = self.query(methods.AUTH_TEST)
-        user_info = self.query(methods.USERS_INFO, {'user': auth['user_id']})
-        bot_id = user_info['user']['profile']['bot_id']
-        LOG.info('BOT_ID is %s', bot_id)
+        user_info = self.query(methods.USERS_INFO, {"user": auth["user_id"]})
+        bot_id = user_info["user"]["profile"]["bot_id"]
+        LOG.info("BOT_ID is %s", bot_id)
         return bot_id
 
     def _find_rtm_url(self):
         response = self.query(methods.RTM_CONNECT)
-        return response['url']
+        return response["url"]
 
     def _incoming_from_rtm(self, url, bot_id):
         for data in self._rtm(url):
