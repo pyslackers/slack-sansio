@@ -40,30 +40,30 @@ import slack
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.viewcode',
-    'sphinxcontrib.asyncio',
-    'sphinxcontrib.napoleon',
-    'sphinx.ext.intersphinx'
+    "sphinx.ext.autodoc",
+    "sphinx.ext.viewcode",
+    "sphinxcontrib.asyncio",
+    "sphinxcontrib.napoleon",
+    "sphinx.ext.intersphinx",
 ]
-suppress_warnings = ['image.nonlocal_uri']
+suppress_warnings = ["image.nonlocal_uri"]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = u'slack-sansio'
+project = u"slack-sansio"
 copyright = u"2017, Pyslackers"
-author = 'Pyslackers'
+author = "Pyslackers"
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -86,7 +86,7 @@ release = slack.__version__
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = ['_build']
+exclude_patterns = ["_build"]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -104,7 +104,7 @@ exclude_patterns = ['_build']
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
@@ -118,7 +118,7 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'alabaster'
+html_theme = "alabaster"
 
 # Theme options are theme-specific and customize the look and feel of a
 # theme further.  For a list of options available for each theme, see the
@@ -155,7 +155,7 @@ html_theme_options = {
 # here, relative to this directory. They are copied after the builtin
 # static files, so a file named "default.css" will overwrite the builtin
 # "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page
 # bottom, using the given strftime format.
@@ -167,12 +167,12 @@ html_static_path = ['_static']
 
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {
-    '**': [
-        'about.html',
-        'navigation.html',
-        'relations.html',
-        'searchbox.html',
-        'donate.html',
+    "**": [
+        "about.html",
+        "navigation.html",
+        "relations.html",
+        "searchbox.html",
+        "donate.html",
     ]
 }
 # Additional templates that should be rendered to pages, maps page names
@@ -208,17 +208,15 @@ html_sidebars = {
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'slack-sansio-doc'
+htmlhelp_basename = "slack-sansio-doc"
 
 # -- Options for LaTeX output ------------------------------------------
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     # 'preamble': '',
 }
@@ -227,9 +225,13 @@ latex_elements = {
 # (source start file, target name, title, author, documentclass
 # [howto/manual]).
 latex_documents = [
-    (master_doc, 'slack-sansio.tex',
-     'slack-sansio Documentation',
-     'Pyslackers', 'manual'),
+    (
+        master_doc,
+        "slack-sansio.tex",
+        "slack-sansio Documentation",
+        "Pyslackers",
+        "manual",
+    )
 ]
 
 # The name of an image file (relative to this directory) to place at
@@ -257,11 +259,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'slack-sansio',
-     'slack-sansio Documentation',
-     [author], 1)
-]
+man_pages = [(master_doc, "slack-sansio", "slack-sansio Documentation", [author], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -273,10 +271,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'slack-sansio', 'slack-sansio Documentation',
-     author, 'slack-sansio',
-     '(a)sync Slack API library.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        "slack-sansio",
+        "slack-sansio Documentation",
+        author,
+        "slack-sansio",
+        "(a)sync Slack API library.",
+        "Miscellaneous",
+    )
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -292,4 +295,4 @@ texinfo_documents = [
 # texinfo_no_detailmenu = False
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/3/': None}
+intersphinx_mapping = {"https://docs.python.org/3/": None}

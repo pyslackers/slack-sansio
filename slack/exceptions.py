@@ -10,6 +10,7 @@ class HTTPException(Exception):
         data: Response data
         status: Response status
     """
+
     def __init__(self, status, headers, data):
         self.headers = headers
         self.data = data
@@ -17,7 +18,7 @@ class HTTPException(Exception):
         self.status = http.HTTPStatus(status)
 
     def __str__(self):
-        return '{}, {}'.format(self.status.value, self.status.phrase)
+        return "{}, {}".format(self.status.value, self.status.phrase)
 
 
 class SlackAPIError(Exception):
@@ -29,6 +30,7 @@ class SlackAPIError(Exception):
         data: Response data
         error: Slack API error
     """
+
     def __init__(self, error, headers, data):
         self.headers = headers
         self.data = data
@@ -45,13 +47,14 @@ class RateLimited(HTTPException, SlackAPIError):
     Attributes:
         retry_after: Timestamp when the rate limitation ends
     """
+
     def __init__(self, retry_after, error, status, headers, data):
         HTTPException.__init__(self, status=status, headers=headers, data=data)
         SlackAPIError.__init__(self, error=error, headers=headers, data=data)
         self.retry_after = retry_after
 
     def __str__(self):
-        return HTTPException.__str__(self) + ', retry in {}s'.format(self.retry_after)
+        return HTTPException.__str__(self) + ", retry in {}s".format(self.retry_after)
 
 
 class FailedVerification(Exception):
@@ -62,6 +65,7 @@ class FailedVerification(Exception):
         token: Token that failed verification
         team_id: Team id that failed verification
     """
+
     def __init__(self, token, team_id):
         self.token = token
         self.team_id = team_id
@@ -74,5 +78,6 @@ class UnknownActionType(Exception):
     Attributes:
         action: The incoming action
     """
+
     def __init__(self, action):
         self.action = action

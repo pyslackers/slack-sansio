@@ -1,10 +1,9 @@
 import re
-import json
 import copy
+import json
 import logging
 import itertools
-
-from collections import defaultdict, MutableMapping
+from collections import MutableMapping, defaultdict
 
 from . import exceptions
 
@@ -40,7 +39,7 @@ class Event(MutableMapping):
         return len(self.event)
 
     def __repr__(self):
-        return 'Slack Event: ' + str(self.event)
+        return "Slack Event: " + str(self.event)
 
     def clone(self):
         """
@@ -65,7 +64,7 @@ class Event(MutableMapping):
         Returns:
             :class:`slack.events.Event` or :class:`slack.events.Message`
         """
-        if raw_event['type'].startswith('message'):
+        if raw_event["type"].startswith("message"):
             return Message(raw_event)
         else:
             return Event(raw_event)
@@ -89,16 +88,16 @@ class Event(MutableMapping):
             :class:`slack.exceptions.FailedVerification`: when `verification_token` or `team_id` does not match the
                                                           incoming event's.
         """
-        if verification_token and raw_body['token'] != verification_token:
-            raise exceptions.FailedVerification(raw_body['token'], raw_body['team_id'])
+        if verification_token and raw_body["token"] != verification_token:
+            raise exceptions.FailedVerification(raw_body["token"], raw_body["team_id"])
 
-        if team_id and raw_body['team_id'] != team_id:
-            raise exceptions.FailedVerification(raw_body['token'], raw_body['team_id'])
+        if team_id and raw_body["team_id"] != team_id:
+            raise exceptions.FailedVerification(raw_body["token"], raw_body["team_id"])
 
-        if raw_body['event']['type'].startswith('message'):
-            return Message(raw_body['event'], metadata=raw_body)
+        if raw_body["event"]["type"].startswith("message"):
+            return Message(raw_body["event"], metadata=raw_body)
         else:
-            return Event(raw_body['event'], metadata=raw_body)
+            return Event(raw_body["event"], metadata=raw_body)
 
 
 class Message(Event):
@@ -112,7 +111,7 @@ class Message(Event):
         super().__init__(msg, metadata)
 
     def __repr__(self):
-        return 'Slack Message: ' + str(self.event)
+        return "Slack Message: " + str(self.event)
 
     def response(self, in_thread=None):
         """
@@ -127,18 +126,20 @@ class Message(Event):
         Returns:
              a new :class:`slack.event.Message`
         """
-        data = {'channel': self['channel']}
+        data = {"channel": self["channel"]}
 
         if in_thread:
-            if 'message' in self:
-                data['thread_ts'] = self['message'].get('thread_ts') or self['message']['ts']
+            if "message" in self:
+                data["thread_ts"] = (
+                    self["message"].get("thread_ts") or self["message"]["ts"]
+                )
             else:
-                data['thread_ts'] = self.get('thread_ts') or self['ts']
+                data["thread_ts"] = self.get("thread_ts") or self["ts"]
         elif in_thread is None:
-            if 'message' in self and 'thread_ts' in self['message']:
-                data['thread_ts'] = self['message']['thread_ts']
-            elif 'thread_ts' in self:
-                data['thread_ts'] = self['thread_ts']
+            if "message" in self and "thread_ts" in self["message"]:
+                data["thread_ts"] = self["message"]["thread_ts"]
+            elif "thread_ts" in self:
+                data["thread_ts"] = self["thread_ts"]
 
         return Message(data)
 
@@ -150,8 +151,8 @@ class Message(Event):
             serialized message
         """
         data = {**self}
-        if 'attachments' in self:
-            data['attachments'] = json.dumps(self['attachments'])
+        if "attachments" in self:
+            data["attachments"] = json.dumps(self["attachments"])
         return data
 
     def to_json(self):
@@ -164,6 +165,7 @@ class EventRouter:
     dispatching event to individual function/coroutine. This class provide such mechanisms for any
     :class:`slack.events.Event`.
     """
+
     def __init__(self):
         self._routes = defaultdict(dict)
 
@@ -180,11 +182,11 @@ class EventRouter:
             handler: Callback
             **detail: Additional key for routing
         """
-        LOG.info('Registering %s, %s to %s', event_type, detail, handler)
+        LOG.info("Registering %s, %s to %s", event_type, detail, handler)
         if len(detail) > 1:
-            raise ValueError('Only one detail can be provided for additional routing')
+            raise ValueError("Only one detail can be provided for additional routing")
         elif not detail:
-            detail_key, detail_value = '*', '*'
+            detail_key, detail_value = "*", "*"
         else:
             detail_key, detail_value = detail.popitem()
 
@@ -206,10 +208,12 @@ class EventRouter:
         Yields:
             handler
         """
-        LOG.debug('Dispatching event "%s"', event.get('type'))
-        if event['type'] in self._routes:
-            for detail_key, detail_values in self._routes.get(event['type'], {}).items():
-                event_value = event.get(detail_key, '*')
+        LOG.debug('Dispatching event "%s"', event.get("type"))
+        if event["type"] in self._routes:
+            for detail_key, detail_values in self._routes.get(
+                event["type"], {}
+            ).items():
+                event_value = event.get(detail_key, "*")
                 yield from detail_values.get(event_value, [])
         else:
             return
@@ -223,10 +227,11 @@ class MessageRouter:
 
     The routing is based on regex pattern matching of the message text and the receiving channel.
     """
+
     def __init__(self):
         self._routes = defaultdict(dict)
 
-    def register(self, pattern, handler, flags=0, channel='*', subtype=None):
+    def register(self, pattern, handler, flags=0, channel="*", subtype=None):
         """
         Register a new handler for a specific :class:`slack.events.Message`.
 
@@ -260,16 +265,18 @@ class MessageRouter:
         Yields:
             handler
         """
-        if 'text' in message:
-            text = message['text'] or ''
-        elif 'message' in message:
-            text = message['message'].get('text', '')
+        if "text" in message:
+            text = message["text"] or ""
+        elif "message" in message:
+            text = message["message"].get("text", "")
         else:
-            text = ''
+            text = ""
 
-        msg_subtype = message.get('subtype')
+        msg_subtype = message.get("subtype")
 
-        for subtype, matchs in itertools.chain(self._routes[message['channel']].items(), self._routes['*'].items()):
+        for subtype, matchs in itertools.chain(
+            self._routes[message["channel"]].items(), self._routes["*"].items()
+        ):
             if msg_subtype == subtype or subtype is None:
                 for match, endpoints in matchs.items():
                     if match.search(text):

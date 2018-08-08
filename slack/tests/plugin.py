@@ -1,10 +1,7 @@
 import pytest
 
 from . import data
-from .conftest import raw_event
-from .conftest import raw_action
-from .conftest import raw_command
-from .conftest import client, FakeIO
+from .conftest import FakeIO, client, raw_event, raw_action, raw_command
 
 
 @pytest.fixture(params={**data.Events.__members__, **data.Messages.__members__})
@@ -40,7 +37,9 @@ def slack_message(request):
     return raw_event(request)
 
 
-@pytest.fixture(params={**data.InteractiveMessage.__members__, **data.DialogSubmission.__members__})
+@pytest.fixture(
+    params={**data.InteractiveMessage.__members__, **data.DialogSubmission.__members__}
+)
 def slack_action(request):
     """
     Fixture returning data sent by the slack API when using an interactive message or dialog.

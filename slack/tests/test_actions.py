@@ -1,5 +1,5 @@
-import slack
 import pytest
+import slack
 
 
 class TestActions:
@@ -7,32 +7,34 @@ class TestActions:
         assert isinstance(action, slack.actions.Action)
 
     def test_parsing_token(self, raw_action):
-        slack.actions.Action.from_http(raw_action, verification_token='supersecuretoken')
+        slack.actions.Action.from_http(
+            raw_action, verification_token="supersecuretoken"
+        )
 
     def test_parsing_team_id(self, raw_action):
-        slack.actions.Action.from_http(raw_action, team_id='T000AAA0A')
+        slack.actions.Action.from_http(raw_action, team_id="T000AAA0A")
 
     def test_parsing_wrong_token(self, raw_action):
         with pytest.raises(slack.exceptions.FailedVerification):
-            slack.actions.Action.from_http(raw_action, verification_token='xxx')
+            slack.actions.Action.from_http(raw_action, verification_token="xxx")
 
     def test_parsing_wrong_team_id(self, raw_action):
         with pytest.raises(slack.exceptions.FailedVerification):
-            slack.actions.Action.from_http(raw_action, team_id='xxx')
+            slack.actions.Action.from_http(raw_action, team_id="xxx")
 
     def test_mapping_access(self, action):
-        assert action['callback_id'] == 'test_action'
+        assert action["callback_id"] == "test_action"
 
     def test_mapping_delete(self, action):
-        assert action['callback_id'] == 'test_action'
-        del action['callback_id']
+        assert action["callback_id"] == "test_action"
+        del action["callback_id"]
         with pytest.raises(KeyError):
-            print(action['callback_id'])
+            print(action["callback_id"])
 
     def test_mapping_set(self, action):
-        assert action['callback_id'] == 'test_action'
-        action['callback_id'] = 'foo'
-        assert action['callback_id'] == 'foo'
+        assert action["callback_id"] == "test_action"
+        action["callback_id"] = "foo"
+        assert action["callback_id"] == "foo"
 
 
 class TestActionRouter:
@@ -40,17 +42,17 @@ class TestActionRouter:
         def handler():
             pass
 
-        action_router.register('test_action', handler)
-        assert len(action_router._routes['test_action']['*']) == 1
-        assert action_router._routes['test_action']['*'][0] is handler
+        action_router.register("test_action", handler)
+        assert len(action_router._routes["test_action"]["*"]) == 1
+        assert action_router._routes["test_action"]["*"][0] is handler
 
     def test_register_name(self, action_router):
         def handler():
             pass
 
-        action_router.register('test_action', handler, name='aaa')
-        assert len(action_router._routes['test_action']['aaa']) == 1
-        assert action_router._routes['test_action']['aaa'][0] is handler
+        action_router.register("test_action", handler, name="aaa")
+        assert len(action_router._routes["test_action"]["aaa"]) == 1
+        assert action_router._routes["test_action"]["aaa"][0] is handler
 
     def test_multiple_register(self, action_router):
         def handler():
@@ -59,18 +61,18 @@ class TestActionRouter:
         def handler_bis():
             pass
 
-        action_router.register('test_action', handler)
-        action_router.register('test_action', handler_bis)
-        assert len(action_router._routes['test_action']['*']) == 2
-        assert action_router._routes['test_action']['*'][0] is handler
-        assert action_router._routes['test_action']['*'][1] is handler_bis
+        action_router.register("test_action", handler)
+        action_router.register("test_action", handler_bis)
+        assert len(action_router._routes["test_action"]["*"]) == 2
+        assert action_router._routes["test_action"]["*"][0] is handler
+        assert action_router._routes["test_action"]["*"][1] is handler_bis
 
     def test_dispath(self, action, action_router):
         def handler():
             pass
 
         handlers = list()
-        action_router.register('test_action', handler)
+        action_router.register("test_action", handler)
 
         for h in action_router.dispatch(action):
             handlers.append(h)
@@ -81,7 +83,7 @@ class TestActionRouter:
         def handler():
             pass
 
-        action_router.register('xxx', handler)
+        action_router.register("xxx", handler)
         for h in action_router.dispatch(action):
             assert False
 
@@ -90,8 +92,8 @@ class TestActionRouter:
             pass
 
         handlers = list()
-        action_router.register('test_action', handler, name='ok')
-        action_router.register('test_action', handler, name='cancel')
+        action_router.register("test_action", handler, name="ok")
+        action_router.register("test_action", handler, name="cancel")
 
         for h in action_router.dispatch(interactive_message):
             handlers.append(h)
@@ -106,8 +108,8 @@ class TestActionRouter:
             pass
 
         handlers = list()
-        action_router.register('test_action', handler)
-        action_router.register('test_action', handler_bis)
+        action_router.register("test_action", handler)
+        action_router.register("test_action", handler_bis)
 
         for h in action_router.dispatch(action):
             handlers.append(h)
@@ -118,10 +120,7 @@ class TestActionRouter:
 
     def test_dispatch_unhandle_type(self, action_router):
 
-        action = {
-            'type': 'unhandled_type',
-            'callback_id': 'test_action'
-        }
+        action = {"type": "unhandled_type", "callback_id": "test_action"}
 
         with pytest.raises(slack.exceptions.UnknownActionType):
             for _ in action_router.dispatch(action):

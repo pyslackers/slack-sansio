@@ -6,17 +6,17 @@ import cgi
 import json
 import logging
 
-from . import exceptions, events, methods, ROOT_URL, HOOK_URL
+from . import HOOK_URL, ROOT_URL, events, methods, exceptions
 
 LOG = logging.getLogger(__name__)
 
-RECONNECT_EVENTS = ('team_migration_started', 'goodbye')
+RECONNECT_EVENTS = ("team_migration_started", "goodbye")
 """Events type preceding a disconnection"""
 
-SKIP_EVENTS = ('reconnect_url', )
+SKIP_EVENTS = ("reconnect_url",)
 """Events that do not need to be dispatched"""
 
-ITERMODE = ('cursor', 'page', 'timeline')
+ITERMODE = ("cursor", "page", "timeline")
 """Supported pagination mode"""
 
 
@@ -36,10 +36,12 @@ def raise_for_status(status, headers, data):
     if status != 200:
         if status == 429:
             try:
-                retry_after = int(headers.get('Retry-After', 1))
+                retry_after = int(headers.get("Retry-After", 1))
             except ValueError:
                 retry_after = 1
-            raise exceptions.RateLimited(retry_after, data.get('error', 'ratelimited'), status, headers, data)
+            raise exceptions.RateLimited(
+                retry_after, data.get("error", "ratelimited"), status, headers, data
+            )
         else:
             raise exceptions.HTTPException(status, headers, data)
 
@@ -55,11 +57,11 @@ def raise_for_api_error(headers, data):
     Raises:
         :class:`slack.exceptions.SlackAPIError`
     """
-    if not data['ok']:
-        raise exceptions.SlackAPIError(data.get('error', 'unknow_error'), headers, data)
+    if not data["ok"]:
+        raise exceptions.SlackAPIError(data.get("error", "unknow_error"), headers, data)
 
-    if 'warning' in data:
-        LOG.warning('Slack API WARNING: %s', data['warning'])
+    if "warning" in data:
+        LOG.warning("Slack API WARNING: %s", data["warning"])
 
 
 def decode_body(headers, body):
@@ -79,7 +81,7 @@ def decode_body(headers, body):
     type_, encoding = parse_content_type(headers)
     decoded_body = body.decode(encoding)
 
-    if type_ == 'application/json':
+    if type_ == "application/json":
         return json.loads(decoded_body)
     else:
         return decoded_body
@@ -95,9 +97,9 @@ def parse_content_type(headers):
     Returns:
         :py:class:`tuple` (content-type, encoding)
     """
-    content_type = headers.get('content-type')
+    content_type = headers.get("content-type")
     if not content_type:
-        return None, 'utf-8'
+        return None, "utf-8"
     else:
         type_, parameters = cgi.parse_header(content_type)
         encoding = parameters.get("charset", "utf-8")
@@ -146,8 +148,8 @@ def prepare_request(url, data, headers, global_headers, token, as_json=None):
 
 
 def _prepare_json_request(data, token, headers):
-    headers['Authorization'] = f'Bearer {token}'
-    headers['Content-type'] = 'application/json; charset=utf-8'
+    headers["Authorization"] = f"Bearer {token}"
+    headers["Content-type"] = "application/json; charset=utf-8"
 
     if isinstance(data, events.Message):
         data = data.to_json()
@@ -162,9 +164,9 @@ def _prepare_form_encoded_request(data, token):
         data = data.serialize()
 
     if not data:
-        data = {'token': token}
-    elif 'token' not in data:
-        data['token'] = token
+        data = {"token": token}
+    elif "token" not in data:
+        data["token"] = token
 
     return data
 
@@ -207,14 +209,16 @@ def find_iteration(url, itermode=None, iterkey=None):
             iterkey = url.value[2]
 
     if not iterkey or not itermode:
-        raise ValueError('Iteration not supported for: {}'.format(url))
+        raise ValueError("Iteration not supported for: {}".format(url))
     elif itermode not in ITERMODE:
-        raise ValueError('Iteration not supported for: {}'.format(itermode))
+        raise ValueError("Iteration not supported for: {}".format(itermode))
 
     return itermode, iterkey
 
 
-def prepare_iter_request(url, data, *, iterkey=None, itermode=None, limit=200, itervalue=None):
+def prepare_iter_request(
+    url, data, *, iterkey=None, itermode=None, limit=200, itervalue=None
+):
     """
     Prepare outgoing iteration request
 
@@ -230,18 +234,18 @@ def prepare_iter_request(url, data, *, iterkey=None, itermode=None, limit=200, i
     """
     itermode, iterkey = find_iteration(url, itermode, iterkey)
 
-    if itermode == 'cursor':
-        data['limit'] = limit
+    if itermode == "cursor":
+        data["limit"] = limit
         if itervalue:
-            data['cursor'] = itervalue
-    elif itermode == 'page':
-        data['count'] = limit
+            data["cursor"] = itervalue
+    elif itermode == "page":
+        data["count"] = limit
         if itervalue:
-            data['page'] = itervalue
-    elif itermode == 'timeline':
-        data['count'] = limit
+            data["page"] = itervalue
+    elif itermode == "timeline":
+        data["count"] = limit
         if itervalue:
-            data['latest'] = itervalue
+            data["latest"] = itervalue
 
     return data, iterkey, itermode
 
@@ -256,16 +260,16 @@ def decode_iter_request(data):
     Returns:
         Next itervalue
     """
-    if 'response_metadata' in data:
-        return data['response_metadata'].get('next_cursor')
-    elif 'paging' in data:
-        current_page = int(data['paging'].get('page', 1))
-        max_page = int(data['paging'].get('pages', 1))
+    if "response_metadata" in data:
+        return data["response_metadata"].get("next_cursor")
+    elif "paging" in data:
+        current_page = int(data["paging"].get("page", 1))
+        max_page = int(data["paging"].get("pages", 1))
 
         if current_page < max_page:
             return current_page + 1
-    elif 'has_more' in data and data['has_more'] and 'latest' in data:
-        return data['messages'][-1]['ts']
+    elif "has_more" in data and data["has_more"] and "latest" in data:
+        return data["messages"][-1]["ts"]
 
 
 def discard_event(event, bot_id=None):
@@ -279,14 +283,14 @@ def discard_event(event, bot_id=None):
     Returns:
         boolean
     """
-    if event['type'] in SKIP_EVENTS:
+    if event["type"] in SKIP_EVENTS:
         return True
     elif bot_id and isinstance(event, events.Message):
-        if event.get('bot_id') == bot_id:
-            LOG.debug('Ignoring event: %s', event)
+        if event.get("bot_id") == bot_id:
+            LOG.debug("Ignoring event: %s", event)
             return True
-        elif 'message' in event and event['message'].get('bot_id') == bot_id:
-            LOG.debug('Ignoring event: %s', event)
+        elif "message" in event and event["message"].get("bot_id") == bot_id:
+            LOG.debug("Ignoring event: %s", event)
             return True
     return False
 
@@ -301,7 +305,7 @@ def need_reconnect(event):
     Returns:
         boolean
     """
-    if event['type'] in RECONNECT_EVENTS:
+    if event["type"] in RECONNECT_EVENTS:
         return True
     else:
         return False

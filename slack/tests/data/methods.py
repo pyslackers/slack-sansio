@@ -14,13 +14,13 @@ CHANNELS = {
             "topic": {
                 "value": "Fun times",
                 "creator": "U000AA000",
-                "last_set": 1369677212
+                "last_set": 1369677212,
             },
             "purpose": {
                 "value": "This channel is for fun",
                 "creator": "U000AA000",
-                "last_set": 1360782804
-            }
+                "last_set": 1360782804,
+            },
         },
         {
             "id": "C00000002",
@@ -33,24 +33,22 @@ CHANNELS = {
             "topic": {
                 "value": "Fun times",
                 "creator": "U000AA000",
-                "last_set": 1369677212
+                "last_set": 1369677212,
             },
             "purpose": {
                 "value": "This channel is for fun",
                 "creator": "U000AA000",
-                "last_set": 1360782804
-            }
-        }
-    ]
+                "last_set": 1360782804,
+            },
+        },
+    ],
 }
 
 
 CHANNELS_ITER = {
     "ok": True,
-    "channels": CHANNELS['channels'],
-    "response_metadata": {
-        "next_cursor": "wxyz"
-    }
+    "channels": CHANNELS["channels"],
+    "response_metadata": {"next_cursor": "wxyz"},
 }
 
 USERS_INFO = {
@@ -81,7 +79,7 @@ USERS_INFO = {
             "image_192": "https:\/\/...\/avatar\/e3b51ca72dee4ef87916ae2b9240df50.jpg",
             "image_512": "https:\/\/...\/avatar\/e3b51ca72dee4ef87916ae2b9240df50.jpg",
             "team": "T012AB3C4",
-            "bot_id": "B0AAA0A00"
+            "bot_id": "B0AAA0A00",
         },
         "is_admin": True,
         "is_owner": False,
@@ -91,8 +89,8 @@ USERS_INFO = {
         "is_bot": True,
         "updated": 1502138686,
         "is_app_user": False,
-        "has_2fa": False
-    }
+        "has_2fa": False,
+    },
 }
 
 AUTH_TEST = {
@@ -101,21 +99,14 @@ AUTH_TEST = {
     "team": "TestTeam Workspace",
     "user": "sirbotalot",
     "team_id": "T12345678",
-    "user_id": "W12345678"
+    "user_id": "W12345678",
 }
 
 RTM_CONNECT = {
     "ok": True,
-    "self": {
-        "id": "W012A3CDE",
-        "name": "sirbotalot"
-    },
-    "team": {
-        "domain": "testteam",
-        "id": "T12345678",
-        "name": "testteam"
-    },
-    "url": "wss:\/\/testteam.slack.com/012345678910"
+    "self": {"id": "W012A3CDE", "name": "sirbotalot"},
+    "team": {"domain": "testteam", "id": "T12345678", "name": "testteam"},
+    "url": "wss:\/\/testteam.slack.com/012345678910",
 }
 
 
@@ -130,6 +121,7 @@ class Methods(Enum):
         - rtm_connect
 
     """
+
     channels_iter = CHANNELS_ITER
     channels = CHANNELS
     users_info = USERS_INFO

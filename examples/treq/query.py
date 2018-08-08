@@ -1,10 +1,10 @@
 import os
 import sys
-import slack
 import pprint
 import logging
 
-from twisted.internet import reactor, defer, task
+from twisted.internet import task, defer, reactor
+import slack
 from slack.io.treq import SlackAPI
 
 logging.basicConfig(level=logging.INFO)
@@ -17,14 +17,15 @@ def main(reactor):
     d.addCallback(pprint.pprint)
     return d
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
 
     if len(sys.argv) > 1:
         TOKEN = sys.argv[1]
     else:
-        TOKEN = os.environ.get('SLACK_TOKEN')
+        TOKEN = os.environ.get("SLACK_TOKEN")
 
     if not TOKEN:
-        raise ValueError('No slack token provided !')
+        raise ValueError("No slack token provided !")
 
     task.react(main)

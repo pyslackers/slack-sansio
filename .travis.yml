@@ -22,16 +22,11 @@ matrix:
       sudo: true
 
 install:
-  - pip freeze
-  - pip install .[dev]
-  - pip install coveralls
+  - pip install pipenv
+  - pipenv install --deploy --dev --ignore-pipfile
 
 script:
-  - python setup.py flake8
-  - python setup.py test
-  - python setup.py doc
-  - python setup.py sdist
-  - python setup.py bdist_wheel
+  - pipenv run slack/tests/test.sh
 
 after_success:
   - coveralls
