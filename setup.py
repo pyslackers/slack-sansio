@@ -15,7 +15,7 @@ requires = {
         "sphinx",
         "sphinxcontrib-asyncio",
         "sphinxcontrib-napoleon"
-    ]
+    ],
     "install": [],
 }
 requires["all"].update(
