@@ -11,6 +11,11 @@ requires = {
     "trio": ["trio", "asks"],
     "treq": ["treq"],
     "all": set(),
+    "doc": [
+        "sphinx",
+        "sphinxcontrib-asyncio",
+        "sphinxcontrib-napoleon"
+    ]
     "install": [],
 }
 requires["all"].update(

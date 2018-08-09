@@ -1,6 +1,6 @@
 python:
   pip_install: true
   extra_requirements:
-    - dev
+    - doc
 conda:
   file: docs/environment.yml
