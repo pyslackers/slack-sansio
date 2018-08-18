@@ -9,7 +9,7 @@ LOG = logging.getLogger(__name__)
 
 class Action(MutableMapping):
     """
-    MutableMapping representing a response to an interactive message.
+    MutableMapping representing a response to an interactive message, a dialog submission or a message action.
 
     Args:
         raw_action: Decoded body of the HTTP request
@@ -99,12 +99,12 @@ class Router:
 
         if action["type"] == "interactive_message":
             yield from self._dispatch_interactive_message(action)
-        elif action["type"] == "dialog_submission":
-            yield from self._dispatch_dialog_submission(action)
+        elif action["type"] in ("dialog_submission", "message_action"):
+            yield from self._dispatch_action(action)
         else:
             raise exceptions.UnknownActionType(action)
 
-    def _dispatch_dialog_submission(self, action):
+    def _dispatch_action(self, action):
         yield from self._routes[action["callback_id"]].get("*", [])
 
     def _dispatch_interactive_message(self, action):
