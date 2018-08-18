@@ -73,6 +73,12 @@ Changelog
 dev
 ```
 
+0.4.2
+`````
+
+* Support incoming action of type ``message_action``
+
+
 0.4.1
 `````
 
