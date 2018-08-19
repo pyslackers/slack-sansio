@@ -11,6 +11,7 @@ curio = "*"
 asks = "*"
 treq = "*"
 trio = "*"
+idna_ssl = {version = "*", markers = "python_version == '3.6'"}
 contextvars = {version = "*", markers = "python_version == '3.6'"}
 immutables = {version = "*", markers = "python_version == '3.6'"}
 
@@ -27,6 +28,7 @@ coverage = "*"
 pytest-coverage = "*"
 pytest-asyncio = "*"
 asynctest = "*"
+mock = "*"
 
 [requires]
 python_version = "3.7"

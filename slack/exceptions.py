@@ -57,7 +57,13 @@ class RateLimited(HTTPException, SlackAPIError):
         return HTTPException.__str__(self) + ", retry in {}s".format(self.retry_after)
 
 
-class FailedVerification(Exception):
+class InvalidRequest(Exception):
+    """
+    Base class for all exception raised due to an invalid verification
+    """
+
+
+class FailedVerification(InvalidRequest):
     """
     Raised when incoming data from Slack webhooks fail verification
 
@@ -69,6 +75,32 @@ class FailedVerification(Exception):
     def __init__(self, token, team_id):
         self.token = token
         self.team_id = team_id
+
+
+class InvalidSlackSignature(InvalidRequest):
+    """
+    Raised when the incoming request fails signature check
+
+    Attributes:
+        slack_signature: Signature sent by slack
+        calculated_singature: Calculated signature
+    """
+
+    def __init__(self, slack_signature, calculated_signature):
+        self.slack_signature = slack_signature
+        self.calculated_signature = calculated_signature
+
+
+class InvalidTimestamp(InvalidRequest):
+    """
+    Raised when the incoming request is too old
+
+    Attributes:
+        timestamp: Timestamp of the incoming request
+    """
+
+    def __init__(self, timestamp):
+        self.timestamp = timestamp
 
 
 class UnknownActionType(Exception):

@@ -72,6 +72,7 @@ Changelog
 
 dev
 ```
+* Support for new slack request signing (``sansio.validate_request_signature`` and ``exceptions.InvalidSlackSignature``)
 
 0.4.2
 `````
