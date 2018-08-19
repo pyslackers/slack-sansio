@@ -2,6 +2,7 @@ import json
 import time
 import logging
 
+import mock
 import pytest
 from slack import sansio, methods, exceptions
 
@@ -361,6 +362,43 @@ class TestResponse:
         data = {"has_more": True, "latest": timestamp, "messages": [{"ts": latest}]}
         next_ = sansio.decode_iter_request(data)
         assert next_ == latest
+
+    @mock.patch("time.time", mock.MagicMock(return_value=1534688291))
+    def test_validate_request_signature_ok(self):
+        headers = {
+            "X-Slack-Request-Timestamp": "1534688291",
+            "X-Slack-Signature": "v0=ac720e09cb1ecb0baa17bea5638fa3d11fc177576dd364e05475d6dbc620c696",
+        }
+        body = """{"token":"abcdefghijkl","team_id":"T000000","api_app_id":"A000000","event":{},"type":"event_callback","authed_teams":["T000000"],"event_id":"AAAAAAA","event_time":1111111111}"""
+
+        sansio.validate_request_signature(
+            body=body, headers=headers, signing_secret="mysupersecret"
+        )
+
+    @mock.patch("time.time", mock.MagicMock(return_value=1534688291))
+    def test_validate_request_signature_nok(self):
+        headers = {
+            "X-Slack-Request-Timestamp": "1534688291",
+            "X-Slack-Signature": "v0=ac720e09cb1ecb0baa17bea5638fa3d11fc177576dd364e05475d6dbc620c697",
+        }
+        body = """{"token":"abcdefghijkl","team_id":"T000000","api_app_id":"A000000","event":{},"type":"event_callback","authed_teams":["T000000"],"event_id":"AAAAAAA","event_time":1111111111}"""
+
+        with pytest.raises(exceptions.InvalidSlackSignature):
+            sansio.validate_request_signature(
+                body=body, headers=headers, signing_secret="mysupersecret"
+            )
+
+    def test_validate_request_signature_too_old(self):
+        headers = {
+            "X-Slack-Request-Timestamp": "1534688291",
+            "X-Slack-Signature": "v0=ac720e09cb1ecb0baa17bea5638fa3d11fc177576dd364e05475d6dbc620c696",
+        }
+        body = """{"token":"abcdefghijkl","team_id":"T000000","api_app_id":"A000000","event":{},"type":"event_callback","authed_teams":["T000000"],"event_id":"AAAAAAA","event_time":1111111111}"""
+
+        with pytest.raises(exceptions.InvalidTimestamp):
+            sansio.validate_request_signature(
+                body=body, headers=headers, signing_secret="mysupersecret"
+            )
 
 
 class TestIncomingEvent:
