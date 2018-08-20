@@ -13,7 +13,11 @@ from slack.actions import Action
 from slack.actions import Router as ActionRouter
 from slack.commands import Router as CommandRouter
 from slack.commands import Command
-from slack.io.requests import SlackAPI as SlackAPIRequest
+
+try:
+    from slack.io.requests import SlackAPI as SlackAPIRequest
+except ImportError:
+    SlackAPIRequest = None
 
 from . import data
 
