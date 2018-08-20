@@ -70,7 +70,7 @@ The library also provide an abstract base class on which to built I/O implementa
 Changelog
 ---------
 
-dev
+0.5.0
 ```
 * Support for new slack request signing (``sansio.validate_request_signature`` and ``exceptions.InvalidSlackSignature``)
 
