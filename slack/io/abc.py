@@ -48,7 +48,9 @@ class SlackAPI(abc.ABC):
         while self.rate_limited and self.rate_limited > int(time.time()):
             await self.sleep(self.rate_limited - int(time.time()))
 
+        LOG.debug("Querying %s with %s, %s", url, headers, body)
         status, rep_body, rep_headers = await self._request("POST", url, headers, body)
+        LOG.debug("Response from %s: %s, %s, %s", url, status, rep_body, rep_headers)
 
         try:
             response_data = sansio.decode_response(status, rep_headers, rep_body)
