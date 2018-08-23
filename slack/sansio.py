@@ -61,7 +61,9 @@ def raise_for_api_error(headers, data):
     Raises:
         :class:`slack.exceptions.SlackAPIError`
     """
-    if not (data == 'ok' or data['ok']):  # There is one api that just returns "ok" instead of json
+
+    # There is one api that just returns "ok" instead of json
+    if not (data == "ok" or data["ok"]):
         raise exceptions.SlackAPIError(data.get("error", "unknow_error"), headers, data)
 
     if "warning" in data:
