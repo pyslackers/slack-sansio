@@ -27,11 +27,11 @@ install:
 
 script:
   - echo $TRAVIS_PYTHON_VERSION
-  - if [[ $TRAVIS_PYTHON_VERSION = "3.7" ]]
+  - if [[ $TRAVIS_PYTHON_VERSION = "3.7" ]];
     then
-      pipenv run slack/tests/test.sh
+      pipenv run slack/tests/test.sh;
     else
-      pipenv run pytest test --verbose --cov
+      pipenv run pytest test --verbose --cov;
     fi
 
 after_success:
