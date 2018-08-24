@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import Any, Dict, Callable, Iterator, Generator
 from collections import MutableMapping, defaultdict
 
 from . import exceptions
@@ -20,8 +21,10 @@ class Action(MutableMapping):
                                                       incoming event's
     """
 
-    def __init__(self, raw_action, verification_token=None, team_id=None):
-        self.action = raw_action
+    def __init__(
+        self, raw_action: Dict, verification_token: str = None, team_id: str = None
+    ) -> None:
+        self.action: Dict[str, Any] = raw_action
 
         if verification_token and self.action["token"] != verification_token:
             raise exceptions.FailedVerification(
@@ -33,26 +36,28 @@ class Action(MutableMapping):
                 self.action["token"], self.action["team"]["id"]
             )
 
-    def __getitem__(self, item):
+    def __getitem__(self, item: str) -> Any:
         return self.action[item]
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key: str, value: Any) -> None:
         self.action[key] = value
 
-    def __delitem__(self, key):
+    def __delitem__(self, key: str) -> None:
         del self.action[key]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[str]:
         return iter(self.action)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.action)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return str(self.action)
 
     @classmethod
-    def from_http(cls, payload, verification_token=None, team_id=None):
+    def from_http(
+        cls, payload, verification_token: str = None, team_id: str = None
+    ) -> "Action":
         action = json.loads(payload["payload"])
         return cls(action, verification_token=verification_token, team_id=team_id)
 
@@ -64,9 +69,9 @@ class Router:
     """
 
     def __init__(self):
-        self._routes = defaultdict(dict)
+        self._routes: Dict[str, Dict] = defaultdict(dict)
 
-    def register(self, callback_id, handler, name="*"):
+    def register(self, callback_id: str, handler: Callable, name: str = "*") -> None:
         """
         Register a new handler for a specific :class:`slack.actions.Action` `callback_id`.
         Optional routing based on the action name too.
@@ -85,7 +90,7 @@ class Router:
 
         self._routes[callback_id][name].append(handler)
 
-    def dispatch(self, action):
+    def dispatch(self, action: Action) -> Any:
         """
         Yields handlers matching the incoming :class:`slack.actions.Action` `callback_id`.
 
@@ -104,10 +109,12 @@ class Router:
         else:
             raise exceptions.UnknownActionType(action)
 
-    def _dispatch_action(self, action):
+    def _dispatch_action(self, action: Action) -> Generator[list, Any, Any]:
         yield from self._routes[action["callback_id"]].get("*", [])
 
-    def _dispatch_interactive_message(self, action):
+    def _dispatch_interactive_message(
+        self, action: Action
+    ) -> Generator[list, Any, Any]:
         if action["actions"][0]["name"] in self._routes[action["callback_id"]]:
             yield from self._routes[action["callback_id"]][action["actions"][0]["name"]]
         else:

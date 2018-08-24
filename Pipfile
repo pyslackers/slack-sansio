@@ -29,6 +29,7 @@ pytest-coverage = "*"
 pytest-asyncio = "*"
 asynctest = "*"
 mock = "*"
+mypy = "*"
 
 [requires]
 python_version = "3.7"
