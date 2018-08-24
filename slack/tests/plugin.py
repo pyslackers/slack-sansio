@@ -4,7 +4,9 @@ from . import data
 from .conftest import FakeIO, client, raw_event, raw_action, raw_command
 
 
-@pytest.fixture(params={**data.Events.__members__, **data.Messages.__members__})
+@pytest.fixture(
+    params={**data.Events.__members__, **data.Messages.__members__}  # type: ignore
+)
 def slack_event(request):
     """
     Fixture returning data sent by the slack event API.
@@ -38,7 +40,10 @@ def slack_message(request):
 
 
 @pytest.fixture(
-    params={**data.InteractiveMessage.__members__, **data.DialogSubmission.__members__}
+    params={
+        **data.InteractiveMessage.__members__,  # type: ignore
+        **data.DialogSubmission.__members__,  # type: ignore
+    }
 )
 def slack_action(request):
     """

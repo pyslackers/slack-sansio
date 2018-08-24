@@ -19,7 +19,7 @@ from . import data
 try:
     from slack.io.requests import SlackAPI as SlackAPIRequest
 except ImportError:
-    SlackAPIRequest = None
+    SlackAPIRequest = None  # type: ignore
 
 
 TOKEN = "abcdefg"
@@ -132,7 +132,9 @@ def _default_response(response):
     return response
 
 
-@pytest.fixture(params={**data.Events.__members__, **data.Messages.__members__})
+@pytest.fixture(
+    params={**data.Events.__members__, **data.Messages.__members__}  # type: ignore
+)
 def raw_event(request):
     if isinstance(request.param, str):
         try:
@@ -148,7 +150,9 @@ def raw_event(request):
         return copy.deepcopy(request.param)
 
 
-@pytest.fixture(params={**data.Events.__members__, **data.Messages.__members__})
+@pytest.fixture(
+    params={**data.Events.__members__, **data.Messages.__members__}  # type: ignore
+)
 def event(request):
     return Event.from_http(raw_event(request))
 
@@ -180,9 +184,9 @@ def message_router():
 
 @pytest.fixture(
     params={
-        **data.InteractiveMessage.__members__,
-        **data.DialogSubmission.__members__,
-        **data.MessageAction.__members__,
+        **data.InteractiveMessage.__members__,  # type: ignore
+        **data.DialogSubmission.__members__,  # type: ignore
+        **data.MessageAction.__members__,  # type: ignore
     }
 )
 def action(request):
@@ -206,9 +210,9 @@ def message_action(request):
 
 @pytest.fixture(
     params={
-        **data.InteractiveMessage.__members__,
-        **data.DialogSubmission.__members__,
-        **data.MessageAction.__members__,
+        **data.InteractiveMessage.__members__,  # type: ignore
+        **data.DialogSubmission.__members__,  # type: ignore
+        **data.MessageAction.__members__,  # type: ignore
     }
 )
 def raw_action(request):
