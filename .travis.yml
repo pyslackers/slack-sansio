@@ -26,7 +26,6 @@ install:
   - pipenv install --deploy --dev --ignore-pipfile
 
 script:
-  - echo $TRAVIS_PYTHON_VERSION
   - if [[ $TRAVIS_PYTHON_VERSION = "3.7" ]];
     then
       pipenv run slack/tests/test.sh;
