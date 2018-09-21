@@ -3,7 +3,8 @@ import copy
 import json
 import logging
 import itertools
-from collections import MutableMapping, defaultdict
+from collections import defaultdict
+from collections.abc import MutableMapping
 
 from . import exceptions
 

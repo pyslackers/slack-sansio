@@ -1,38 +1,43 @@
 import pytest
 import slack
+from slack.commands import Command
 
 
 class TestCommand:
     def test_fixture(self, command):
-        assert isinstance(command, slack.commands.Command)
+        com = Command(command)
+        assert isinstance(com, slack.commands.Command)
 
-    def test_parsing_token(self, raw_command):
-        slack.commands.Command(raw_command, verification_token="supersecuretoken")
+    def test_parsing_token(self, command):
+        slack.commands.Command(command, verification_token="supersecuretoken")
 
-    def test_parsing_team_id(self, raw_command):
-        slack.commands.Command(raw_command, team_id="T000AAA0A")
+    def test_parsing_team_id(self, command):
+        slack.commands.Command(command, team_id="T000AAA0A")
 
-    def test_parsing_wrong_token(self, raw_command):
+    def test_parsing_wrong_token(self, command):
         with pytest.raises(slack.exceptions.FailedVerification):
-            slack.commands.Command(raw_command, verification_token="xxx")
+            slack.commands.Command(command, verification_token="xxx")
 
-    def test_parsing_wrong_team_id(self, raw_command):
+    def test_parsing_wrong_team_id(self, command):
         with pytest.raises(slack.exceptions.FailedVerification):
-            slack.commands.Command(raw_command, team_id="xxx")
+            slack.commands.Command(command, team_id="xxx")
 
     def test_mapping_access(self, command):
-        assert command["user_id"] == "U000AA000"
+        com = Command(command)
+        assert com["user_id"] == "U000AA000"
 
     def test_mapping_delete(self, command):
-        assert command["user_id"] == "U000AA000"
-        del command["user_id"]
+        com = Command(command)
+        assert com["user_id"] == "U000AA000"
+        del com["user_id"]
         with pytest.raises(KeyError):
-            print(command["user_id"])
+            print(com["user_id"])
 
     def test_mapping_set(self, command):
-        assert command["user_id"] == "U000AA000"
-        command["user_id"] = "foo"
-        assert command["user_id"] == "foo"
+        com = Command(command)
+        assert com["user_id"] == "U000AA000"
+        com["user_id"] = "foo"
+        assert com["user_id"] == "foo"
 
 
 class TestCommandRouter:

@@ -70,20 +70,25 @@ The library also provide an abstract base class on which to built I/O implementa
 Changelog
 ---------
 
+dev
+```
+
+* Rework of the pytest plugin ``slack.tests.plugins``.
+
 0.5.1
 `````
 
 * Allow testing without installing sync I/O requirements
 
 0.5.0
-```
+`````
+
 * Support for new slack request signing (``sansio.validate_request_signature`` and ``exceptions.InvalidSlackSignature``)
 
 0.4.2
 `````
 
 * Support incoming action of type ``message_action``
-
 
 0.4.1
 `````

@@ -1,7 +1,8 @@
 import json
 import logging
 from typing import Any, Dict, Callable, Iterator, Generator
-from collections import MutableMapping, defaultdict
+from collections import defaultdict
+from collections.abc import MutableMapping
 
 from . import exceptions
 

@@ -60,7 +60,7 @@ USERS_INFO = {
         "deleted": True,
         "color": "9f69e7",
         "real_name": "episod",
-        "tz": "America\/Los_Angeles",
+        "tz": "America/Los_Angeles",
         "tz_label": "Pacific Daylight Time",
         "tz_offset": -25200,
         "profile": {
@@ -72,12 +72,12 @@ USERS_INFO = {
             "real_name_normalized": "Egon Spengler",
             "display_name_normalized": "spengler",
             "email": "spengler@ghostbusters.example.com",
-            "image_24": "https:\/\/...\/avatar\/e3b51ca72dee4ef87916ae2b9240df50.jpg",
-            "image_32": "https:\/\/...\/avatar\/e3b51ca72dee4ef87916ae2b9240df50.jpg",
-            "image_48": "https:\/\/...\/avatar\/e3b51ca72dee4ef87916ae2b9240df50.jpg",
-            "image_72": "https:\/\/...\/avatar\/e3b51ca72dee4ef87916ae2b9240df50.jpg",
-            "image_192": "https:\/\/...\/avatar\/e3b51ca72dee4ef87916ae2b9240df50.jpg",
-            "image_512": "https:\/\/...\/avatar\/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "image_24": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "image_32": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "image_48": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "image_72": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "image_192": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
+            "image_512": "https://.../avatar/e3b51ca72dee4ef87916ae2b9240df50.jpg",
             "team": "T012AB3C4",
             "bot_id": "B0AAA0A00",
         },
@@ -95,7 +95,7 @@ USERS_INFO = {
 
 AUTH_TEST = {
     "ok": True,
-    "url": "https:\/\/testteam.slack.com\/",
+    "url": "https://testteam.slack.com/",
     "team": "TestTeam Workspace",
     "user": "sirbotalot",
     "team_id": "T12345678",
@@ -106,7 +106,7 @@ RTM_CONNECT = {
     "ok": True,
     "self": {"id": "W012A3CDE", "name": "sirbotalot"},
     "team": {"domain": "testteam", "id": "T12345678", "name": "testteam"},
-    "url": "wss:\/\/testteam.slack.com/012345678910",
+    "url": "wss://testteam.slack.com/012345678910",
 }
 
 

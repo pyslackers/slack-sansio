@@ -2,27 +2,30 @@ import re
 
 import pytest
 import slack
+from slack.events import Event
 
 from . import data
 
 
 class TestEvents:
     def test_clone_event(self, event):
-        clone = event.clone()
-        assert clone == event
+        ev = Event.from_http(event)
+        clone = ev.clone()
+        assert clone == ev
 
     def test_modify_clone(self, event):
-        clone = event.clone()
+        ev = Event.from_http(event)
+        clone = ev.clone()
         clone["text"] = "aaaaa"
-        assert clone != event
+        assert clone != ev
 
-    def test_parsing(self, raw_event):
-        http_event = slack.events.Event.from_http(raw_event)
-        rtm_event = slack.events.Event.from_rtm(raw_event["event"])
+    def test_parsing(self, event):
+        http_event = slack.events.Event.from_http(event)
+        rtm_event = slack.events.Event.from_rtm(event["event"])
 
         assert isinstance(http_event, slack.events.Event)
         assert isinstance(rtm_event, slack.events.Event)
-        assert http_event.event == rtm_event.event == raw_event["event"]
+        assert http_event.event == rtm_event.event == event["event"]
         assert rtm_event.metadata is None
         assert http_event.metadata == {
             "token": "supersecuretoken",
@@ -35,19 +38,19 @@ class TestEvents:
             "event_time": 123456789,
         }
 
-    def test_parsing_token(self, raw_event):
-        slack.events.Event.from_http(raw_event, verification_token="supersecuretoken")
+    def test_parsing_token(self, event):
+        slack.events.Event.from_http(event, verification_token="supersecuretoken")
 
-    def test_parsing_team_id(self, raw_event):
-        slack.events.Event.from_http(raw_event, team_id="T000AAA0A")
+    def test_parsing_team_id(self, event):
+        slack.events.Event.from_http(event, team_id="T000AAA0A")
 
-    def test_parsing_wrong_token(self, raw_event):
+    def test_parsing_wrong_token(self, event):
         with pytest.raises(slack.exceptions.FailedVerification):
-            slack.events.Event.from_http(raw_event, verification_token="xxx")
+            slack.events.Event.from_http(event, verification_token="xxx")
 
-    def test_parsing_wrong_team_id(self, raw_event):
+    def test_parsing_wrong_team_id(self, event):
         with pytest.raises(slack.exceptions.FailedVerification):
-            slack.events.Event.from_http(raw_event, team_id="xxx")
+            slack.events.Event.from_http(event, team_id="xxx")
 
     @pytest.mark.parametrize(
         "event",
@@ -64,7 +67,8 @@ class TestEvents:
         indirect=True,
     )
     def test_mapping_access(self, event):
-        assert event["user"] == "U000AA000"
+        ev = Event.from_http(event)
+        assert ev["user"] == "U000AA000"
 
     @pytest.mark.parametrize(
         "event",
@@ -81,10 +85,11 @@ class TestEvents:
         indirect=True,
     )
     def test_mapping_delete(self, event):
-        assert event["user"] == "U000AA000"
-        del event["user"]
+        ev = Event.from_http(event)
+        assert ev["user"] == "U000AA000"
+        del ev["user"]
         with pytest.raises(KeyError):
-            print(event["user"])
+            print(ev["user"])
 
     @pytest.mark.parametrize(
         "event",
@@ -101,16 +106,17 @@ class TestEvents:
         indirect=True,
     )
     def test_mapping_set(self, event):
-        assert event["user"] == "U000AA000"
-        event["user"] = "foo"
-        assert event["user"] == "foo"
+        ev = Event.from_http(event)
+        assert ev["user"] == "U000AA000"
+        ev["user"] = "foo"
+        assert ev["user"] == "foo"
 
 
 class TestMessage:
-    @pytest.mark.parametrize("raw_event", {**data.Messages.__members__}, indirect=True)
-    def test_parsing(self, raw_event):
-        http_event = slack.events.Event.from_http(raw_event)
-        rtm_event = slack.events.Event.from_rtm(raw_event["event"])
+    @pytest.mark.parametrize("event", {**data.Messages.__members__}, indirect=True)
+    def test_parsing(self, event):
+        http_event = slack.events.Event.from_http(event)
+        rtm_event = slack.events.Event.from_rtm(event["event"])
 
         assert isinstance(http_event, slack.events.Message)
         assert isinstance(rtm_event, slack.events.Message)
@@ -145,21 +151,25 @@ class TestMessage:
         }
 
     def test_response(self, message):
-        rep = message.response()
+        msg = Event.from_http(message)
+        rep = msg.response()
         assert isinstance(rep, slack.events.Message)
         assert rep["channel"] == "C00000A00"
 
     def test_response_not_in_thread(self, message):
-        rep = message.response(in_thread=False)
+        msg = Event.from_http(message)
+        rep = msg.response(in_thread=False)
         assert rep == {"channel": "C00000A00"}
 
     def test_response_in_thread(self, message):
-        rep = message.response(in_thread=True)
+        msg = Event.from_http(message)
+        rep = msg.response(in_thread=True)
         assert rep == {"channel": "C00000A00", "thread_ts": "123456789.000001"}
 
     def test_response_thread_default(self, message):
-        rep = message.response()
-        if "thread_ts" in message or "thread_ts" in message.get("message", {}):
+        msg = Event.from_http(message)
+        rep = msg.response()
+        if "thread_ts" in msg or "thread_ts" in msg.get("message", {}):
             assert rep == {"channel": "C00000A00", "thread_ts": "123456789.000001"}
         else:
             assert rep == {"channel": "C00000A00"}
@@ -207,13 +217,15 @@ class TestEventRouter:
         def handler():
             pass
 
+        ev = Event.from_http(event)
+
         handlers = list()
         event_router.register("channel_deleted", handler)
         event_router.register("pin_added", handler)
         event_router.register("reaction_added", handler)
         event_router.register("message", handler)
 
-        for h in event_router.dispatch(event):
+        for h in event_router.dispatch(ev):
             handlers.append(h)
         assert len(handlers) == 1
         assert handlers[0] is handler
@@ -223,8 +235,11 @@ class TestEventRouter:
         def handler():
             pass
 
+        ev = Event.from_http(event)
+
         event_router.register("xxx", handler)
-        for h in event_router.dispatch(event):
+
+        for h in event_router.dispatch(ev):
             assert False
 
     @pytest.mark.parametrize("event", {**data.Events.__members__}, indirect=True)
@@ -232,13 +247,15 @@ class TestEventRouter:
         def handler():
             pass
 
+        ev = Event.from_http(event)
+
         handlers = list()
         event_router.register("channel_deleted", handler, channel="C00000A00")
         event_router.register("pin_added", handler, channel="C00000A00")
         event_router.register("reaction_added", handler, reaction="sirbot")
         event_router.register("message", handler, text=None)
 
-        for h in event_router.dispatch(event):
+        for h in event_router.dispatch(ev):
             handlers.append(h)
         assert len(handlers) == 1
         assert handlers[0] is handler
@@ -251,6 +268,8 @@ class TestEventRouter:
         def handler_bis():
             pass
 
+        ev = Event.from_http(event)
+
         handlers = list()
         event_router.register("channel_deleted", handler)
         event_router.register("pin_added", handler)
@@ -261,7 +280,7 @@ class TestEventRouter:
         event_router.register("message", handler)
         event_router.register("message", handler_bis)
 
-        for h in event_router.dispatch(event):
+        for h in event_router.dispatch(ev):
             handlers.append(h)
         assert len(handlers) == 2
         assert handlers[0] is handler
@@ -313,9 +332,11 @@ class TestMessageRouter:
         def handler():
             pass
 
+        msg = Event.from_http(message)
         message_router.register(".*", handler)
+
         handlers = list()
-        for h in message_router.dispatch(message):
+        for h in message_router.dispatch(msg):
             handlers.append(h)
 
         assert len(handlers) == 1
@@ -325,17 +346,21 @@ class TestMessageRouter:
         def handler():
             pass
 
+        msg = Event.from_http(message)
         message_router.register("xxx", handler)
-        for h in message_router.dispatch(message):
+
+        for h in message_router.dispatch(msg):
             assert False
 
     def test_dispatch_pattern(self, message_router, message):
         def handler():
             pass
 
+        msg = Event.from_http(message)
         message_router.register("hello", handler)
+
         handlers = list()
-        for h in message_router.dispatch(message):
+        for h in message_router.dispatch(msg):
             handlers.append(h)
 
         assert len(handlers) == 1
@@ -348,11 +373,13 @@ class TestMessageRouter:
         def handler_bis():
             pass
 
+        msg = Event.from_http(message)
+
         message_router.register(".*", handler)
         message_router.register(".*", handler_bis)
 
         handlers = list()
-        for h in message_router.dispatch(message):
+        for h in message_router.dispatch(msg):
             handlers.append(h)
 
         assert len(handlers) == 2
@@ -366,11 +393,13 @@ class TestMessageRouter:
         def handler_bis():
             pass
 
+        msg = Event.from_http(message)
+
         message_router.register("hello", handler)
         message_router.register("hello", handler_bis)
 
         handlers = list()
-        for h in message_router.dispatch(message):
+        for h in message_router.dispatch(msg):
             handlers.append(h)
 
         assert len(handlers) == 2
@@ -381,9 +410,11 @@ class TestMessageRouter:
         def handler():
             pass
 
+        msg = Event.from_http(message)
         message_router.register("hello", handler, channel="C00000A00")
+
         handlers = list()
-        for h in message_router.dispatch(message):
+        for h in message_router.dispatch(msg):
             handlers.append(h)
 
         assert len(handlers) == 1
@@ -394,9 +425,11 @@ class TestMessageRouter:
         def handler():
             pass
 
+        msg = Event.from_http(message)
         message_router.register(".*", handler, subtype="channel_topic")
+
         handlers = list()
-        for h in message_router.dispatch(message):
+        for h in message_router.dispatch(msg):
             handlers.append(h)
 
         assert len(handlers) == 1
