@@ -135,31 +135,26 @@ def _default_response(response):
 @pytest.fixture(
     params={**data.Events.__members__, **data.Messages.__members__}  # type: ignore
 )
-def raw_event(request):
+def event(request):
     if isinstance(request.param, str):
         try:
-            return copy.deepcopy(data.Events[request.param].value)
+            payload = copy.deepcopy(data.Events[request.param].value)
         except KeyError:
-            pass
-        try:
-            return copy.deepcopy(data.Messages[request.param].value)
-        except KeyError:
-            pass
-        raise KeyError(f'Event "{request.param}" not found')
+            payload = copy.deepcopy(data.Messages[request.param].value)
     else:
-        return copy.deepcopy(request.param)
+        payload = copy.deepcopy(request.param)
+
+    return payload
 
 
-@pytest.fixture(
-    params={**data.Events.__members__, **data.Messages.__members__}  # type: ignore
-)
-def event(request):
-    return Event.from_http(raw_event(request))
-
-
-@pytest.fixture(params={**data.Messages.__members__})
+@pytest.fixture(params={**data.Messages.__members__})  # type: ignore
 def message(request):
-    return Event.from_http(raw_event(request))
+    if isinstance(request.param, str):
+        payload = copy.deepcopy(data.Messages[request.param].value)
+    else:
+        payload = copy.deepcopy(request.param)
+
+    return payload
 
 
 @pytest.fixture()
@@ -190,46 +185,33 @@ def message_router():
     }
 )
 def action(request):
-    return Action.from_http(raw_action(request))
-
-
-@pytest.fixture(params={**data.InteractiveMessage.__members__})
-def interactive_message(request):
-    return Action.from_http(raw_action(request))
-
-
-@pytest.fixture(params={**data.DialogSubmission.__members__})
-def dialog_submission(request):
-    return Action.from_http(raw_action(request))
-
-
-@pytest.fixture(params={**data.MessageAction.__members__})
-def message_action(request):
-    return Action.from_http(raw_action(request))
-
-
-@pytest.fixture(
-    params={
-        **data.InteractiveMessage.__members__,  # type: ignore
-        **data.DialogSubmission.__members__,  # type: ignore
-        **data.MessageAction.__members__,  # type: ignore
-    }
-)
-def raw_action(request):
     if isinstance(request.param, str):
         try:
-            return copy.deepcopy(data.InteractiveMessage[request.param].value)
+            payload = copy.deepcopy(data.InteractiveMessage[request.param].value)
         except KeyError:
-            pass
-
-        try:
-            return copy.deepcopy(data.DialogSubmission[request.param].value)
-        except KeyError:
-            pass
-
-        return copy.deepcopy(data.MessageAction[request.param].value)
+            try:
+                payload = copy.deepcopy(data.DialogSubmission[request.param].value)
+            except KeyError:
+                payload = copy.deepcopy(data.MessageAction[request.param].value)
     else:
-        return copy.deepcopy(request.param)
+        payload = copy.deepcopy(request.param)
+
+    return payload
+
+
+# @pytest.fixture(params={**data.InteractiveMessage.__members__})
+# def interactive_message(request):
+#     return Action.from_http(raw_action(request))
+
+
+# @pytest.fixture(params={**data.DialogSubmission.__members__})
+# def dialog_submission(request):
+#     return Action.from_http(raw_action(request))
+
+
+# @pytest.fixture(params={**data.MessageAction.__members__})
+# def message_action(request):
+#     return Action.from_http(raw_action(request))
 
 
 @pytest.fixture()
@@ -238,16 +220,13 @@ def action_router():
 
 
 @pytest.fixture(params={**data.Commands.__members__})
-def raw_command(request):
-    if isinstance(request.param, str):
-        return copy.deepcopy(data.Commands[request.param].value)
-    else:
-        return copy.deepcopy(request.param)
-
-
-@pytest.fixture(params={**data.Commands.__members__})
 def command(request):
-    return Command(raw_command(request))
+    if isinstance(request.param, str):
+        payload = copy.deepcopy(data.Commands[request.param].value)
+    else:
+        payload = copy.deepcopy(request.param)
+
+    return payload
 
 
 @pytest.fixture()

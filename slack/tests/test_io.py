@@ -320,14 +320,14 @@ class TestABC:
     )
     async def test_find_rtm_url(self, client):
         url = await client._find_rtm_url()
-        assert url == "wss:\/\/testteam.slack.com/012345678910"
+        assert url == "wss://testteam.slack.com/012345678910"
 
     async def test_incoming_rtm(self, client, rtm_iterator):
         client._rtm = rtm_iterator
 
         events = []
         async for event in client._incoming_from_rtm(
-            "wss:\/\/testteam.slack.com/012345678910", "B0AAA0A00"
+            "wss://testteam.slack.com/012345678910", "B0AAA0A00"
         ):
             assert isinstance(event, slack.events.Event)
             events.append(event)
@@ -339,7 +339,7 @@ class TestABC:
 
         events = []
         async for event in client._incoming_from_rtm(
-            "wss:\/\/testteam.slack.com/012345678910", "B0AAA0A00"
+            "wss://testteam.slack.com/012345678910", "B0AAA0A00"
         ):
             events.append(event)
 
@@ -351,7 +351,7 @@ class TestABC:
 
         events = []
         async for event in client._incoming_from_rtm(
-            "wss:\/\/testteam.slack.com/012345678910", "B0AAA0A00"
+            "wss://testteam.slack.com/012345678910", "B0AAA0A00"
         ):
             events.append(event)
 
@@ -363,7 +363,7 @@ class TestABC:
 
         events = []
         async for event in client._incoming_from_rtm(
-            "wss:\/\/testteam.slack.com/012345678910", "B0AAA0A00"
+            "wss://testteam.slack.com/012345678910", "B0AAA0A00"
         ):
             events.append(event)
 
@@ -611,14 +611,14 @@ class TestNoAsync:
     )
     def test_find_rtm_url(self, client):
         url = client._find_rtm_url()
-        assert url == "wss:\/\/testteam.slack.com/012345678910"
+        assert url == "wss://testteam.slack.com/012345678910"
 
     def test_incoming_rtm(self, client, rtm_iterator_non_async):
         client._rtm = rtm_iterator_non_async
 
         events = []
         for event in client._incoming_from_rtm(
-            "wss:\/\/testteam.slack.com/012345678910", "B0AAA0A00"
+            "wss://testteam.slack.com/012345678910", "B0AAA0A00"
         ):
             assert isinstance(event, slack.events.Event)
             events.append(event)
@@ -630,7 +630,7 @@ class TestNoAsync:
 
         events = []
         for event in client._incoming_from_rtm(
-            "wss:\/\/testteam.slack.com/012345678910", "B0AAA0A00"
+            "wss://testteam.slack.com/012345678910", "B0AAA0A00"
         ):
             events.append(event)
 
@@ -644,7 +644,7 @@ class TestNoAsync:
 
         events = []
         for event in client._incoming_from_rtm(
-            "wss:\/\/testteam.slack.com/012345678910", "B0AAA0A00"
+            "wss://testteam.slack.com/012345678910", "B0AAA0A00"
         ):
             events.append(event)
 
@@ -658,7 +658,7 @@ class TestNoAsync:
 
         events = []
         for event in client._incoming_from_rtm(
-            "wss:\/\/testteam.slack.com/012345678910", "B0AAA0A00"
+            "wss://testteam.slack.com/012345678910", "B0AAA0A00"
         ):
             events.append(event)
 

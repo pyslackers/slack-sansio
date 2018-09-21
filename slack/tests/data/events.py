@@ -388,7 +388,7 @@ GOODBYE = {"type": "goodbye"}
 
 RECONNECT_URL = {
     "type": "reconnect_url",
-    "url": "wss:\/\/testteam.slack.com/012345678910",
+    "url": "wss://testteam.slack.com/012345678910",
 }
 
 

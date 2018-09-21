@@ -5,6 +5,9 @@ import logging
 import mock
 import pytest
 from slack import sansio, methods, exceptions
+from slack.events import Event
+
+from . import data
 
 
 class TestRequest:
@@ -88,9 +91,9 @@ class TestRequest:
         assert headers["Content-type"] == "application/json; charset=utf-8"
 
     def test_prepare_request_body_message(self, token, message):
-        _, body, headers = sansio.prepare_request(
-            methods.AUTH_TEST, message, {}, {}, token
-        )
+
+        msg = Event.from_http(message)
+        _, body, headers = sansio.prepare_request(methods.AUTH_TEST, msg, {}, {}, token)
 
         assert isinstance(body, str)
         assert "Authorization" in headers
@@ -98,7 +101,7 @@ class TestRequest:
         assert headers["Content-type"] == "application/json; charset=utf-8"
 
         _, body, headers = sansio.prepare_request(
-            methods.AUTH_REVOKE, message, {}, {}, token
+            methods.AUTH_REVOKE, msg, {}, {}, token
         )
 
         assert isinstance(body, dict)
@@ -106,8 +109,10 @@ class TestRequest:
         assert body["token"] == token
 
     def test_prepare_request_body_message_force_json(self, token, message):
+
+        msg = Event.from_http(message)
         _, body, headers = sansio.prepare_request(
-            methods.AUTH_REVOKE, message, {}, {}, token, as_json=True
+            methods.AUTH_REVOKE, msg, {}, {}, token, as_json=True
         )
 
         assert isinstance(body, str)
@@ -116,8 +121,10 @@ class TestRequest:
         assert headers["Content-type"] == "application/json; charset=utf-8"
 
     def test_prepare_request_message_hook(self, token, message):
+
+        msg = Event.from_http(message)
         _, body, headers = sansio.prepare_request(
-            "https://hooks.slack.com/abcdefg", message, {}, {}, token
+            "https://hooks.slack.com/abcdefg", msg, {}, {}, token
         )
 
         assert isinstance(body, str)
@@ -404,10 +411,13 @@ class TestResponse:
 class TestIncomingEvent:
     @pytest.mark.parametrize("event", ("bot", "bot_edit"), indirect=True)
     def test_discard_event(self, event):
-        assert sansio.discard_event(event, "B0AAA0A00") is True
+        ev = Event.from_http(event)
+        assert sansio.discard_event(ev, "B0AAA0A00") is True
 
     def test_not_discard_event(self, event):
-        assert sansio.discard_event(event, "B0AAA0A01") is False
+        ev = Event.from_http(event)
+        assert sansio.discard_event(ev, "B0AAA0A01") is False
 
     def test_no_need_reconnect(self, event):
-        assert sansio.need_reconnect(event) is False
+        ev = Event.from_http(event)
+        assert sansio.need_reconnect(ev) is False
