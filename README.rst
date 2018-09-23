@@ -74,6 +74,7 @@ dev
 ```
 
 * Rework of the pytest plugin ``slack.tests.plugins``.
+* Remove deprecated rate limit code.
 
 0.5.1
 `````
