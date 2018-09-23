@@ -74,137 +74,7 @@ class TestABC:
 
     @pytest.mark.parametrize(
         "client",
-        (
-            {
-                "retry_when_rate_limit": True,
-                "_request": [
-                    {
-                        "status": 429,
-                        "body": {"ok": False},
-                        "headers": {"Retry-After": 1},
-                    },
-                    {},
-                ],
-            },
-        ),
-        indirect=True,
-    )
-    async def test_retry_rate_limited(self, client, token):
-        client.sleep = asynctest.CoroutineMock(side_effect=client.sleep)
-        rep = await client.query(methods.AUTH_TEST)
-        assert client._request.call_count == 2
-        client.sleep.assert_called_once_with(1)
-        assert client._request.call_args_list[0] == client._request.call_args_list[1]
-        args, kwargs = client._request.call_args_list[0]
-        assert args == (
-            "POST",
-            "https://slack.com/api/auth.test",
-            {
-                "Content-type": "application/json; charset=utf-8",
-                "Authorization": f"Bearer {token}",
-            },
-            "{}",
-        )
-        assert kwargs == {}
-        assert rep == {"ok": True}
-
-    @pytest.mark.parametrize(
-        "client",
-        (
-            {
-                "retry_when_rate_limit": True,
-                "_request": [
-                    {
-                        "status": 429,
-                        "body": {"ok": False},
-                        "headers": {"Retry-After": 1},
-                    },
-                    {},
-                ],
-            },
-        ),
-        indirect=True,
-    )
-    async def test_retry_rate_limited_with_body(self, client, token):
-        client.sleep = asynctest.CoroutineMock(side_effect=client.sleep)
-        await client.query(methods.AUTH_TEST, data={"foo": "bar"})
-        assert client._request.call_count == 2
-        client.sleep.assert_called_once_with(1)
-        assert client._request.call_args_list[0] == client._request.call_args_list[1]
-        args, kwargs = client._request.call_args_list[0]
-        assert args == (
-            "POST",
-            "https://slack.com/api/auth.test",
-            {
-                "Content-type": "application/json; charset=utf-8",
-                "Authorization": f"Bearer {token}",
-            },
-            '{"foo": "bar"}',
-        )
-        assert kwargs == {}
-
-    @pytest.mark.parametrize(
-        "client",
-        (
-            {
-                "retry_when_rate_limit": True,
-                "_request": [
-                    {
-                        "status": 429,
-                        "body": {"ok": False},
-                        "headers": {"Retry-After": 1},
-                    },
-                    {},
-                ],
-            },
-        ),
-        indirect=True,
-    )
-    async def test_retry_rate_limited_with_headers(self, client, token):
-        client.sleep = asynctest.CoroutineMock(side_effect=client.sleep)
-        await client.query(methods.AUTH_TEST, headers={"foo": "bar"})
-        assert client._request.call_count == 2
-        client.sleep.assert_called_once_with(1)
-        assert client._request.call_args_list[0] == client._request.call_args_list[1]
-        args, kwargs = client._request.call_args_list[0]
-        assert args == (
-            "POST",
-            "https://slack.com/api/auth.test",
-            {
-                "foo": "bar",
-                "Content-type": "application/json; charset=utf-8",
-                "Authorization": f"Bearer {token}",
-            },
-            "{}",
-        )
-        assert kwargs == {}
-
-    @pytest.mark.parametrize(
-        "client",
-        (
-            {
-                "retry_when_rate_limit": False,
-                "_request": {
-                    "status": 429,
-                    "body": {"ok": False},
-                    "headers": {"Retry-After": 2},
-                },
-            },
-        ),
-        indirect=True,
-    )
-    async def test_raise_rate_limited(self, client):
-        with pytest.raises(exceptions.RateLimited):
-            await client.query(methods.AUTH_TEST)
-
-    @pytest.mark.parametrize(
-        "client",
-        (
-            {
-                "retry_when_rate_limit": False,
-                "_request": [{"body": "channels_iter"}, {"body": "channels"}],
-            },
-        ),
+        ({"_request": [{"body": "channels_iter"}, {"body": "channels"}]},),
         indirect=True,
     )
     async def test_iter(self, client, token, itercursor):
@@ -223,12 +93,7 @@ class TestABC:
 
     @pytest.mark.parametrize(
         "client",
-        (
-            {
-                "retry_when_rate_limit": False,
-                "_request": [{"body": "channels_iter"}, {"body": "channels"}],
-            },
-        ),
+        ({"_request": [{"body": "channels_iter"}, {"body": "channels"}]},),
         indirect=True,
     )
     async def test_iter_itermode_iterkey(self, client, token, itercursor):
@@ -264,12 +129,7 @@ class TestABC:
 
     @pytest.mark.parametrize(
         "client",
-        (
-            {
-                "retry_when_rate_limit": False,
-                "_request": [{"body": "channels_iter"}, {"body": "channels"}],
-            },
-        ),
+        ({"_request": [{"body": "channels_iter"}, {"body": "channels"}]},),
         indirect=True,
     )
     async def test_iter_wait(self, client):
@@ -286,12 +146,7 @@ class TestABC:
 
     @pytest.mark.parametrize(
         "client",
-        (
-            {
-                "retry_when_rate_limit": False,
-                "_request": [{"body": "channels_iter"}, {"body": "channels"}],
-            },
-        ),
+        ({"_request": [{"body": "channels_iter"}, {"body": "channels"}]},),
         indirect=True,
     )
     async def test_iter_no_wait(self, client):
@@ -406,137 +261,7 @@ class TestNoAsync:
 
     @pytest.mark.parametrize(
         "client",
-        (
-            {
-                "retry_when_rate_limit": True,
-                "_request": [
-                    {
-                        "status": 429,
-                        "body": {"ok": False},
-                        "headers": {"Retry-After": 1},
-                    },
-                    {},
-                ],
-            },
-        ),
-        indirect=True,
-    )
-    def test_retry_rate_limited(self, client, token):
-        client.sleep = asynctest.CoroutineMock(side_effect=client.sleep)
-        rep = client.query(methods.AUTH_TEST)
-        assert client._request.call_count == 2
-        client.sleep.assert_called_once_with(1)
-        assert client._request.call_args_list[0] == client._request.call_args_list[1]
-        args, kwargs = client._request.call_args_list[0]
-        assert args == (
-            "POST",
-            "https://slack.com/api/auth.test",
-            {
-                "Content-type": "application/json; charset=utf-8",
-                "Authorization": f"Bearer {token}",
-            },
-            "{}",
-        )
-        assert kwargs == {}
-        assert rep == {"ok": True}
-
-    @pytest.mark.parametrize(
-        "client",
-        (
-            {
-                "retry_when_rate_limit": True,
-                "_request": [
-                    {
-                        "status": 429,
-                        "body": {"ok": False},
-                        "headers": {"Retry-After": 1},
-                    },
-                    {},
-                ],
-            },
-        ),
-        indirect=True,
-    )
-    def test_retry_rate_limited_with_body(self, client, token):
-        client.sleep = asynctest.CoroutineMock(side_effect=client.sleep)
-        client.query(methods.AUTH_TEST, data={"foo": "bar"})
-        assert client._request.call_count == 2
-        client.sleep.assert_called_once_with(1)
-        assert client._request.call_args_list[0] == client._request.call_args_list[1]
-        args, kwargs = client._request.call_args_list[0]
-        assert args == (
-            "POST",
-            "https://slack.com/api/auth.test",
-            {
-                "Content-type": "application/json; charset=utf-8",
-                "Authorization": f"Bearer {token}",
-            },
-            '{"foo": "bar"}',
-        )
-        assert kwargs == {}
-
-    @pytest.mark.parametrize(
-        "client",
-        (
-            {
-                "retry_when_rate_limit": True,
-                "_request": [
-                    {
-                        "status": 429,
-                        "body": {"ok": False},
-                        "headers": {"Retry-After": 1},
-                    },
-                    {},
-                ],
-            },
-        ),
-        indirect=True,
-    )
-    def test_retry_rate_limited_with_headers(self, client, token):
-        client.sleep = asynctest.CoroutineMock(side_effect=client.sleep)
-        client.query(methods.AUTH_TEST, headers={"foo": "bar"})
-        assert client._request.call_count == 2
-        client.sleep.assert_called_once_with(1)
-        assert client._request.call_args_list[0] == client._request.call_args_list[1]
-        args, kwargs = client._request.call_args_list[0]
-        assert args == (
-            "POST",
-            "https://slack.com/api/auth.test",
-            {
-                "foo": "bar",
-                "Content-type": "application/json; charset=utf-8",
-                "Authorization": f"Bearer {token}",
-            },
-            "{}",
-        )
-        assert kwargs == {}
-
-    @pytest.mark.parametrize(
-        "client",
-        (
-            {
-                "retry_when_rate_limit": False,
-                "_request": {
-                    "status": 429,
-                    "body": {"ok": False},
-                    "headers": {"Retry-After": 2},
-                },
-            },
-        ),
-        indirect=True,
-    )
-    def test_raise_rate_limited(self, client):
-        with pytest.raises(exceptions.RateLimited):
-            client.query(methods.AUTH_TEST)
-
-    @pytest.mark.parametrize(
-        "client",
-        (
-            {
-                "retry_when_rate_limit": False,
-                "_request": [{"body": "channels_iter"}, {"body": "channels"}],
-            },
-        ),
+        ({"_request": [{"body": "channels_iter"}, {"body": "channels"}]},),
         indirect=True,
     )
     def test_iter(self, client, token, itercursor):
@@ -555,12 +280,7 @@ class TestNoAsync:
 
     @pytest.mark.parametrize(
         "client",
-        (
-            {
-                "retry_when_rate_limit": False,
-                "_request": [{"body": "channels_iter"}, {"body": "channels"}],
-            },
-        ),
+        ({"_request": [{"body": "channels_iter"}, {"body": "channels"}]},),
         indirect=True,
     )
     def test_iter_wait(self, client):
@@ -577,12 +297,7 @@ class TestNoAsync:
 
     @pytest.mark.parametrize(
         "client",
-        (
-            {
-                "retry_when_rate_limit": False,
-                "_request": [{"body": "channels_iter"}, {"body": "channels"}],
-            },
-        ),
+        ({"_request": [{"body": "channels_iter"}, {"body": "channels"}]},),
         indirect=True,
     )
     def test_iter_no_wait(self, client):

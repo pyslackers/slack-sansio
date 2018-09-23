@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
     loop = asyncio.get_event_loop()
     session = aiohttp.ClientSession(loop=loop)
-    slack_client = SlackAPI(token=TOKEN, session=session, raise_on_rate_limit=True)
+    slack_client = SlackAPI(token=TOKEN, session=session)
 
     try:
         loop.run_until_complete(iterate(slack_client))

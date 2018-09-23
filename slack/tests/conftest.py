@@ -59,12 +59,7 @@ def io_client(request):
     return request.param
 
 
-@pytest.fixture(
-    params=(
-        {"retry_when_rate_limit": True, "token": TOKEN},
-        {"retry_when_rate_limit": False, "token": TOKEN},
-    )
-)
+@pytest.fixture(params=({"token": TOKEN},))
 def client(request, io_client):
     default_request = {
         "status": 200,
