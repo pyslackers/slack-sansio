@@ -16,20 +16,12 @@ class SlackAPI(abc.ABC):
     Args:
         session: HTTP session
         token: Slack API token
-        retry_when_rate_limit: Retry or raise an exception when rate limited
         headers: Default headers for all request
-
-    Attributes:
-        rate_limited: If rate limited timestamp when rate limit stop
-
     """
 
-    def __init__(self, *, token, retry_when_rate_limit=True, headers=None):
+    def __init__(self, *, token, headers=None):
         self._token = token
         self._headers = headers or {}
-        self._retry_when_rate_limit = retry_when_rate_limit
-
-        self.rate_limited = False
 
     @abc.abstractmethod
     async def _request(self, method, url, headers, body):
@@ -45,27 +37,12 @@ class SlackAPI(abc.ABC):
 
     async def _make_query(self, url, body, headers):
 
-        while self.rate_limited and self.rate_limited > int(time.time()):
-            await self.sleep(self.rate_limited - int(time.time()))
-
         LOG.debug("Querying %s with %s, %s", url, headers, body)
         status, rep_body, rep_headers = await self._request("POST", url, headers, body)
         LOG.debug("Response from %s: %s, %s, %s", url, status, rep_body, rep_headers)
 
-        try:
-            response_data = sansio.decode_response(status, rep_headers, rep_body)
-        except exceptions.RateLimited as rate_limited:
-            if self._retry_when_rate_limit:
-                LOG.warning(
-                    "Rate limited ! Waiting for %s seconds", rate_limited.retry_after
-                )
-                self.rate_limited = int(time.time()) + rate_limited.retry_after
-                return await self._make_query(url, body, headers)
-            else:
-                raise
-        else:
-            self.rate_limited = False
-            return response_data
+        response_data = sansio.decode_response(status, rep_headers, rep_body)
+        return response_data
 
     async def query(self, url, data=None, headers=None, as_json=None):
         """

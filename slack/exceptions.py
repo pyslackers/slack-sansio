@@ -42,7 +42,7 @@ class SlackAPIError(Exception):
 
 class RateLimited(HTTPException, SlackAPIError):
     """
-    Raised when rate limited when `retry_when_rate_limit` is `False`
+    Raised when rate limited.
 
     Attributes:
         retry_after: Timestamp when the rate limitation ends

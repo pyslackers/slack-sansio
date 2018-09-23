@@ -43,25 +43,10 @@ class SlackAPI(abc.SlackAPI):
 
     def _make_query(self, url, body, headers):
 
-        while self.rate_limited and self.rate_limited > int(time.time()):
-            self.sleep(self.rate_limited - int(time.time()))
-
         status, rep_body, rep_headers = self._request("POST", url, headers, body)
 
-        try:
-            response_data = sansio.decode_response(status, rep_headers, rep_body)
-        except exceptions.RateLimited as rate_limited:
-            if self._retry_when_rate_limit:
-                LOG.warning(
-                    "Rate limited ! Waiting for %s seconds", rate_limited.retry_after
-                )
-                self.rate_limited = int(time.time()) + rate_limited.retry_after
-                return self._make_query(url, body, headers)
-            else:
-                raise
-        else:
-            self.rate_limited = False
-            return response_data
+        response_data = sansio.decode_response(status, rep_headers, rep_body)
+        return response_data
 
     def query(self, url, data=None, headers=None, as_json=None):
         """
