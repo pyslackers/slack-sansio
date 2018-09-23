@@ -2,6 +2,7 @@ import abc
 import json
 import time
 import logging
+from typing import Tuple, Union, Optional, AsyncIterator
 
 from .. import events, sansio, methods, exceptions
 
@@ -19,23 +20,31 @@ class SlackAPI(abc.ABC):
         headers: Default headers for all request
     """
 
-    def __init__(self, *, token, headers=None):
+    def __init__(self, *, token: str, headers: Optional[dict] = None) -> None:
         self._token = token
         self._headers = headers or {}
 
     @abc.abstractmethod
-    async def _request(self, method, url, headers, body):
+    async def _request(
+        self,
+        method: str,
+        url: Union[str, methods],
+        headers: Optional[dict],
+        body: Optional[Union[str, dict]],
+    ) -> Tuple[int, bytes, dict]:
         pass
 
     @abc.abstractmethod
-    async def _rtm(self, url):
-        pass
+    async def _rtm(self, url: Union[str, methods]) -> AsyncIterator[str]:
+        yield ""
 
     @abc.abstractmethod
-    async def sleep(self, seconds):
+    async def sleep(self, seconds: int):
         pass
 
-    async def _make_query(self, url, body, headers):
+    async def _make_query(
+        self, url: str, body: Optional[Union[str, dict]], headers: Optional[dict]
+    ) -> dict:
 
         LOG.debug("Querying %s with %s, %s", url, headers, body)
         status, rep_body, rep_headers = await self._request("POST", url, headers, body)
@@ -44,7 +53,13 @@ class SlackAPI(abc.ABC):
         response_data = sansio.decode_response(status, rep_headers, rep_body)
         return response_data
 
-    async def query(self, url, data=None, headers=None, as_json=None):
+    async def query(
+        self,
+        url: Union[str, methods],
+        data: Optional[dict] = None,
+        headers: Optional[dict] = None,
+        as_json: Optional[bool] = None,
+    ) -> dict:
         """
         Query the slack API
 
@@ -72,16 +87,16 @@ class SlackAPI(abc.ABC):
 
     async def iter(
         self,
-        url,
-        data=None,
-        headers=None,
+        url: Union[str, methods],
+        data: Optional[dict] = None,
+        headers: Optional[dict] = None,
         *,
-        limit=200,
-        iterkey=None,
-        itermode=None,
-        minimum_time=None,
-        as_json=None
-    ):
+        limit: int = 200,
+        iterkey: Optional[str] = None,
+        itermode: Optional[str] = None,
+        minimum_time: Optional[int] = None,
+        as_json: Optional[bool] = None
+    ) -> AsyncIterator[dict]:
         """
         Iterate over a slack API method supporting pagination
 
@@ -133,7 +148,9 @@ class SlackAPI(abc.ABC):
             if not itervalue:
                 break
 
-    async def rtm(self, url=None, bot_id=None):
+    async def rtm(
+        self, url: Optional[str] = None, bot_id: Optional[str] = None
+    ) -> AsyncIterator[events.Event]:
         """
         Iterate over event from the RTM API
 
@@ -152,7 +169,7 @@ class SlackAPI(abc.ABC):
                 yield event
             url = None
 
-    async def _find_bot_id(self):
+    async def _find_bot_id(self) -> str:
         """
         Find the bot ID to discard incoming message from the bot itself.
 
@@ -165,7 +182,7 @@ class SlackAPI(abc.ABC):
         LOG.info("BOT_ID is %s", bot_id)
         return bot_id
 
-    async def _find_rtm_url(self):
+    async def _find_rtm_url(self) -> str:
         """
         Call `rtm.connect` to find the websocket url.
 
@@ -175,7 +192,7 @@ class SlackAPI(abc.ABC):
         response = await self.query(methods.RTM_CONNECT)
         return response["url"]
 
-    async def _incoming_from_rtm(self, url, bot_id):
+    async def _incoming_from_rtm(self, url: str, bot_id: str):
         """
         Connect and discard incoming RTM event if necessary.
 
