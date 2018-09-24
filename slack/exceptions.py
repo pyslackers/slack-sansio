@@ -1,7 +1,7 @@
 import http
 from typing import MutableMapping
 
-from . import actions
+from .actions import Action
 
 
 class HTTPException(Exception):
@@ -125,5 +125,5 @@ class UnknownActionType(Exception):
         action: The incoming action
     """
 
-    def __init__(self, action: actions.Action) -> None:
+    def __init__(self, action: Action) -> None:
         self.action = action
