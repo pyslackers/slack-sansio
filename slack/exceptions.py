@@ -1,8 +1,6 @@
 import http
 from typing import MutableMapping
 
-from .actions import Action
-
 
 class HTTPException(Exception):
     """
@@ -115,15 +113,3 @@ class InvalidTimestamp(InvalidRequest):
 
     def __init__(self, timestamp: float) -> None:
         self.timestamp = timestamp
-
-
-class UnknownActionType(Exception):
-    """
-    Raised for incoming action with unknown type
-
-    Attributes:
-        action: The incoming action
-    """
-
-    def __init__(self, action: Action) -> None:
-        self.action = action

@@ -108,7 +108,7 @@ class Router:
         elif action["type"] in ("dialog_submission", "message_action"):
             yield from self._dispatch_action(action)
         else:
-            raise exceptions.UnknownActionType(action)
+            raise UnknownActionType(action)
 
     def _dispatch_action(self, action: Action) -> Generator[list, Any, Any]:
         yield from self._routes[action["callback_id"]].get("*", [])
@@ -120,3 +120,15 @@ class Router:
             yield from self._routes[action["callback_id"]][action["actions"][0]["name"]]
         else:
             yield from self._routes[action["callback_id"]].get("*", [])
+
+
+class UnknownActionType(Exception):
+    """
+    Raised for incoming action with unknown type
+
+    Attributes:
+        action: The incoming action
+    """
+
+    def __init__(self, action: Action) -> None:
+        self.action = action
