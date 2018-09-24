@@ -313,7 +313,7 @@ def decode_iter_request(data: dict) -> Optional[Union[str, int]]:
     return None
 
 
-def discard_event(event: dict, bot_id: str = None) -> bool:
+def discard_event(event: events.Event, bot_id: str = None) -> bool:
     """
     Check if the incoming event needs to be discarded
 
@@ -336,7 +336,7 @@ def discard_event(event: dict, bot_id: str = None) -> bool:
     return False
 
 
-def need_reconnect(event: dict) -> bool:
+def need_reconnect(event: events.Event) -> bool:
     """
     Check if RTM needs reconnecting
 

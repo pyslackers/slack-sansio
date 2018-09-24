@@ -3,6 +3,7 @@ import copy
 import json
 import logging
 import itertools
+from typing import Any, Dict, Iterator, Optional, MutableMapping
 from collections import defaultdict
 from collections.abc import MutableMapping
 
@@ -20,7 +21,9 @@ class Event(MutableMapping):
                   (see `slack event API documentation <https://api.slack.com/events-api#receiving_events>`_)
     """
 
-    def __init__(self, raw_event, metadata=None):
+    def __init__(
+        self, raw_event: MutableMapping, metadata: Optional[MutableMapping] = None
+    ) -> None:
         self.event = raw_event
         self.metadata = metadata
 
@@ -42,7 +45,7 @@ class Event(MutableMapping):
     def __repr__(self):
         return "Slack Event: " + str(self.event)
 
-    def clone(self):
+    def clone(self) -> "Event":
         """
         Clone the event
 
@@ -53,7 +56,7 @@ class Event(MutableMapping):
         return self.__class__(copy.deepcopy(self.event), copy.deepcopy(self.metadata))
 
     @classmethod
-    def from_rtm(cls, raw_event):
+    def from_rtm(cls, raw_event: MutableMapping) -> "Event":
         """
         Create an event with data coming from the RTM API.
 
@@ -71,7 +74,12 @@ class Event(MutableMapping):
             return Event(raw_event)
 
     @classmethod
-    def from_http(cls, raw_body, verification_token=None, team_id=None):
+    def from_http(
+        cls,
+        raw_body: MutableMapping,
+        verification_token: Optional[str] = None,
+        team_id: Optional[str] = None,
+    ) -> "Event":
         """
         Create an event with data coming from the HTTP Event API.
 
@@ -106,15 +114,19 @@ class Message(Event):
     Type of :class:`slack.events.Event` corresponding to a message event type
     """
 
-    def __init__(self, msg=None, metadata=None):
+    def __init__(
+        self,
+        msg: Optional[MutableMapping] = None,
+        metadata: Optional[MutableMapping] = None,
+    ) -> None:
         if not msg:
             msg = {}
         super().__init__(msg, metadata)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "Slack Message: " + str(self.event)
 
-    def response(self, in_thread=None):
+    def response(self, in_thread: Optional[bool] = None) -> "Message":
         """
         Create a response message.
 
@@ -144,7 +156,7 @@ class Message(Event):
 
         return Message(data)
 
-    def serialize(self):
+    def serialize(self) -> dict:
         """
         Serialize the message for sending to slack API
 
@@ -156,7 +168,7 @@ class Message(Event):
             data["attachments"] = json.dumps(self["attachments"])
         return data
 
-    def to_json(self):
+    def to_json(self) -> str:
         return json.dumps({**self})
 
 
@@ -168,9 +180,9 @@ class EventRouter:
     """
 
     def __init__(self):
-        self._routes = defaultdict(dict)
+        self._routes: Dict[str, Dict] = defaultdict(dict)
 
-    def register(self, event_type, handler, **detail):
+    def register(self, event_type: str, handler: Any, **detail: Any) -> None:
         """
         Register a new handler for a specific :class:`slack.events.Event` `type` (See `slack event types documentation
         <https://api.slack.com/events>`_ for a list of event types).
@@ -199,7 +211,7 @@ class EventRouter:
 
         self._routes[event_type][detail_key][detail_value].append(handler)
 
-    def dispatch(self, event):
+    def dispatch(self, event: Event) -> Iterator[Any]:
         """
         Yields handlers matching the routing of the incoming :class:`slack.events.Event`.
 
@@ -230,9 +242,16 @@ class MessageRouter:
     """
 
     def __init__(self):
-        self._routes = defaultdict(dict)
+        self._routes: Dict[str, Dict] = defaultdict(dict)
 
-    def register(self, pattern, handler, flags=0, channel="*", subtype=None):
+    def register(
+        self,
+        pattern: str,
+        handler: Any,
+        flags: int = 0,
+        channel: str = "*",
+        subtype: Optional[str] = None,
+    ) -> None:
         """
         Register a new handler for a specific :class:`slack.events.Message`.
 
@@ -256,7 +275,7 @@ class MessageRouter:
         else:
             self._routes[channel][subtype][match] = [handler]
 
-    def dispatch(self, message):
+    def dispatch(self, message: Message) -> Iterator[Any]:
         """
         Yields handlers matching the routing of the incoming :class:`slack.events.Message`
 

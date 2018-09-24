@@ -133,6 +133,6 @@ class TestActionRouter:
 
         action = {"type": "unhandled_type", "callback_id": "test_action"}
 
-        with pytest.raises(slack.exceptions.UnknownActionType):
+        with pytest.raises(slack.actions.UnknownActionType):
             for _ in action_router.dispatch(action):
                 pass
