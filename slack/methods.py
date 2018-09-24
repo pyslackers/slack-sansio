@@ -1,7 +1,7 @@
 from enum import Enum
 
-ROOT_URL = "https://slack.com/api/"
-HOOK_URL = "https://hooks.slack.com"
+ROOT_URL: str = "https://slack.com/api/"
+HOOK_URL: str = "https://hooks.slack.com"
 
 
 class Methods(Enum):

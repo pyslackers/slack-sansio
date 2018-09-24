@@ -9,7 +9,7 @@ import time
 import base64
 import hashlib
 import logging
-from typing import Tuple, Union, Optional
+from typing import Tuple, Union, Optional, MutableMapping
 
 from . import HOOK_URL, ROOT_URL, events, methods, exceptions
 
@@ -25,7 +25,9 @@ ITERMODE = ("cursor", "page", "timeline")
 """Supported pagination mode"""
 
 
-def raise_for_status(status: int, headers: dict, data: dict) -> None:
+def raise_for_status(
+    status: int, headers: MutableMapping, data: MutableMapping
+) -> None:
     """
     Check request response status
 
@@ -55,7 +57,7 @@ def raise_for_status(status: int, headers: dict, data: dict) -> None:
             raise exceptions.HTTPException(status, headers, data)
 
 
-def raise_for_api_error(headers: dict, data: dict) -> None:
+def raise_for_api_error(headers: MutableMapping, data: MutableMapping) -> None:
     """
     Check request response for Slack API error
 
@@ -74,7 +76,7 @@ def raise_for_api_error(headers: dict, data: dict) -> None:
         LOG.warning("Slack API WARNING: %s", data["warning"])
 
 
-def decode_body(headers: dict, body: bytes) -> dict:
+def decode_body(headers: MutableMapping, body: bytes) -> dict:
     """
     Decode the response body
 
@@ -103,7 +105,7 @@ def decode_body(headers: dict, body: bytes) -> dict:
     return payload
 
 
-def parse_content_type(headers: dict) -> Tuple[Optional[str], str]:
+def parse_content_type(headers: MutableMapping) -> Tuple[Optional[str], str]:
     """
     Find content-type and encoding of the response
 
@@ -124,12 +126,12 @@ def parse_content_type(headers: dict) -> Tuple[Optional[str], str]:
 
 def prepare_request(
     url: Union[str, methods],
-    data: Optional[dict],
-    headers: Optional[dict],
-    global_headers: dict,
+    data: Optional[MutableMapping],
+    headers: Optional[MutableMapping],
+    global_headers: MutableMapping,
     token: str,
     as_json: Optional[bool] = None,
-) -> Tuple[str, Union[str, dict], dict]:
+) -> Tuple[str, Union[str, MutableMapping], MutableMapping]:
     """
     Prepare outgoing request
 
@@ -158,7 +160,7 @@ def prepare_request(
     else:
         headers = {**global_headers, **headers}
 
-    payload: Optional[Union[str, dict]] = None
+    payload: Optional[Union[str, MutableMapping]] = None
     if real_url.startswith(HOOK_URL) or (real_url.startswith(ROOT_URL) and as_json):
         payload, headers = _prepare_json_request(data, token, headers)
     elif real_url.startswith(ROOT_URL) and not as_json:
@@ -171,8 +173,8 @@ def prepare_request(
 
 
 def _prepare_json_request(
-    data: Optional[dict], token: str, headers: dict
-) -> Tuple[str, dict]:
+    data: Optional[MutableMapping], token: str, headers: MutableMapping
+) -> Tuple[str, MutableMapping]:
     headers["Authorization"] = f"Bearer {token}"
     headers["Content-type"] = "application/json; charset=utf-8"
 
@@ -184,7 +186,9 @@ def _prepare_json_request(
     return payload, headers
 
 
-def _prepare_form_encoded_request(data: Optional[dict], token: str) -> dict:
+def _prepare_form_encoded_request(
+    data: Optional[MutableMapping], token: str
+) -> MutableMapping:
     if isinstance(data, events.Message):
         data = data.serialize()
 
@@ -196,7 +200,7 @@ def _prepare_form_encoded_request(data: Optional[dict], token: str) -> dict:
     return data
 
 
-def decode_response(status: int, headers: dict, body: bytes) -> dict:
+def decode_response(status: int, headers: MutableMapping, body: bytes) -> dict:
     """
     Decode incoming response
 
@@ -247,13 +251,13 @@ def find_iteration(
 
 def prepare_iter_request(
     url: Union[methods, str],
-    data: dict,
+    data: MutableMapping,
     *,
     iterkey: Optional[str] = None,
     itermode: Optional[str] = None,
     limit: int = 200,
     itervalue: Optional[Union[str, int]] = None,
-) -> Tuple[dict, str, str]:
+) -> Tuple[MutableMapping, str, str]:
     """
     Prepare outgoing iteration request
 
@@ -348,7 +352,9 @@ def need_reconnect(event: dict) -> bool:
         return False
 
 
-def validate_request_signature(body: str, headers: dict, signing_secret: str) -> None:
+def validate_request_signature(
+    body: str, headers: MutableMapping, signing_secret: str
+) -> None:
     """
     Validate incoming request signature using the application signing secret.
 
