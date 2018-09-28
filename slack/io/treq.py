@@ -1,3 +1,5 @@
+from typing import Tuple, Union, Optional, AsyncIterator, MutableMapping
+
 import treq
 from twisted.internet import defer, reactor
 from twisted.web.http_headers import Headers
@@ -14,7 +16,16 @@ class SlackAPI(abc.SlackAPI):
         self._reactor = reactor
         super().__init__(*args, **kwargs)
 
-    async def _request(self, method, url, headers, body):
+    async def _request(
+        self,
+        method: str,
+        url: str,
+        headers: Optional[MutableMapping],
+        body: Optional[Union[str, MutableMapping]],
+    ) -> Tuple[int, bytes, MutableMapping]:
+
+        if not headers:
+            headers = {}
 
         headers = Headers(
             {
@@ -36,10 +47,11 @@ class SlackAPI(abc.SlackAPI):
     async def rtm(self, url=None, bot_id=None):
         raise NotImplementedError
 
-    async def _rtm(self, url):
+    async def _rtm(self, url: str) -> AsyncIterator[str]:
+        yield ""
         raise NotImplementedError
 
-    async def sleep(self, seconds):
+    async def sleep(self, seconds: float) -> None:
         d = defer.Deferred()
         self._reactor.callLater(seconds, d.callback, None)
         await d

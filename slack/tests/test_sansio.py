@@ -323,10 +323,15 @@ class TestResponse:
         assert caplog.records[0].msg == "Slack API WARNING: %s"
         assert caplog.records[0].args == ("test warning",)
 
-    def test_decode_body(self):
+    def test_decode_body_string_ok(self):
+        body = b"ok"
+        decoded_body = sansio.decode_body({}, body)
+        assert decoded_body == {"ok": True}
+
+    def test_decode_body_string_nok(self):
         body = b"hello world"
         decoded_body = sansio.decode_body({}, body)
-        assert decoded_body == "hello world"
+        assert decoded_body == {"ok": False, "data": "hello world"}
 
     def test_decode_body_json(self):
         body = b'{"test-string":"hello","test-bool":true}'

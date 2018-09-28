@@ -1,4 +1,5 @@
 import http
+from typing import MutableMapping
 
 
 class HTTPException(Exception):
@@ -11,7 +12,9 @@ class HTTPException(Exception):
         status: Response status
     """
 
-    def __init__(self, status, headers, data):
+    def __init__(
+        self, status: int, headers: MutableMapping, data: MutableMapping
+    ) -> None:
         self.headers = headers
         self.data = data
 
@@ -31,7 +34,9 @@ class SlackAPIError(Exception):
         error: Slack API error
     """
 
-    def __init__(self, error, headers, data):
+    def __init__(
+        self, error: str, headers: MutableMapping, data: MutableMapping
+    ) -> None:
         self.headers = headers
         self.data = data
         self.error = error
@@ -48,7 +53,14 @@ class RateLimited(HTTPException, SlackAPIError):
         retry_after: Timestamp when the rate limitation ends
     """
 
-    def __init__(self, retry_after, error, status, headers, data):
+    def __init__(
+        self,
+        retry_after: int,
+        error: str,
+        status: int,
+        headers: MutableMapping,
+        data: MutableMapping,
+    ) -> None:
         HTTPException.__init__(self, status=status, headers=headers, data=data)
         SlackAPIError.__init__(self, error=error, headers=headers, data=data)
         self.retry_after = retry_after
@@ -72,7 +84,7 @@ class FailedVerification(InvalidRequest):
         team_id: Team id that failed verification
     """
 
-    def __init__(self, token, team_id):
+    def __init__(self, token: str, team_id: str) -> None:
         self.token = token
         self.team_id = team_id
 
@@ -86,7 +98,7 @@ class InvalidSlackSignature(InvalidRequest):
         calculated_singature: Calculated signature
     """
 
-    def __init__(self, slack_signature, calculated_signature):
+    def __init__(self, slack_signature: str, calculated_signature: str) -> None:
         self.slack_signature = slack_signature
         self.calculated_signature = calculated_signature
 
@@ -99,17 +111,5 @@ class InvalidTimestamp(InvalidRequest):
         timestamp: Timestamp of the incoming request
     """
 
-    def __init__(self, timestamp):
+    def __init__(self, timestamp: float) -> None:
         self.timestamp = timestamp
-
-
-class UnknownActionType(Exception):
-    """
-    Raised for incoming action with unknown type
-
-    Attributes:
-        action: The incoming action
-    """
-
-    def __init__(self, action):
-        self.action = action

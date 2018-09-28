@@ -1,4 +1,6 @@
+import typing
 import logging
+from typing import Any, Dict, Iterator, Optional
 from collections import defaultdict
 from collections.abc import MutableMapping
 
@@ -19,7 +21,12 @@ class Command(MutableMapping):
                                                       incoming command's
     """
 
-    def __init__(self, raw_command, verification_token=None, team_id=None):
+    def __init__(
+        self,
+        raw_command: typing.MutableMapping,
+        verification_token: Optional[str] = None,
+        team_id: Optional[str] = None,
+    ) -> None:
         self.command = raw_command
 
         if verification_token and self.command["token"] != verification_token:
@@ -59,9 +66,9 @@ class Router:
     """
 
     def __init__(self):
-        self._routes = defaultdict(list)
+        self._routes: Dict[str, list] = defaultdict(list)
 
-    def register(self, command, handler):
+    def register(self, command: str, handler: Any):
         """
         Register a new handler for a specific slash command
 
@@ -76,7 +83,7 @@ class Router:
         LOG.info("Registering %s to %s", command, handler)
         self._routes[command].append(handler)
 
-    def dispatch(self, command):
+    def dispatch(self, command: Command) -> Iterator[Any]:
         """
         Yields handlers matching the incoming :class:`slack.actions.Command`.
 

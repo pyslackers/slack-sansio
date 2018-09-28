@@ -70,11 +70,13 @@ The library also provide an abstract base class on which to built I/O implementa
 Changelog
 ---------
 
-dev
-```
+0.6.0
+`````
 
 * Rework of the pytest plugin ``slack.tests.plugins``.
 * Remove deprecated rate limit code.
+* Add type annotations & fix found bugs.
+* Move ``slack.exceptions.UnknownActionType`` to ``slack.action.UnknownActionType``.
 
 0.5.1
 `````

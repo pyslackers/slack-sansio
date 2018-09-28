@@ -9,6 +9,7 @@ import time
 import base64
 import hashlib
 import logging
+from typing import Tuple, Union, Optional, MutableMapping
 
 from . import HOOK_URL, ROOT_URL, events, methods, exceptions
 
@@ -24,7 +25,9 @@ ITERMODE = ("cursor", "page", "timeline")
 """Supported pagination mode"""
 
 
-def raise_for_status(status, headers, data):
+def raise_for_status(
+    status: int, headers: MutableMapping, data: MutableMapping
+) -> None:
     """
     Check request response status
 
@@ -39,18 +42,22 @@ def raise_for_status(status, headers, data):
     """
     if status != 200:
         if status == 429:
+
+            if isinstance(data, str):
+                error = data
+            else:
+                error = data.get("error", "ratelimited")
+
             try:
                 retry_after = int(headers.get("Retry-After", 1))
             except ValueError:
                 retry_after = 1
-            raise exceptions.RateLimited(
-                retry_after, data.get("error", "ratelimited"), status, headers, data
-            )
+            raise exceptions.RateLimited(retry_after, error, status, headers, data)
         else:
             raise exceptions.HTTPException(status, headers, data)
 
 
-def raise_for_api_error(headers, data):
+def raise_for_api_error(headers: MutableMapping, data: MutableMapping) -> None:
     """
     Check request response for Slack API error
 
@@ -62,15 +69,14 @@ def raise_for_api_error(headers, data):
         :class:`slack.exceptions.SlackAPIError`
     """
 
-    # There is one api that just returns "ok" instead of json
-    if not (data == "ok" or data["ok"]):
+    if not data["ok"]:
         raise exceptions.SlackAPIError(data.get("error", "unknow_error"), headers, data)
 
     if "warning" in data:
         LOG.warning("Slack API WARNING: %s", data["warning"])
 
 
-def decode_body(headers, body):
+def decode_body(headers: MutableMapping, body: bytes) -> dict:
     """
     Decode the response body
 
@@ -87,13 +93,19 @@ def decode_body(headers, body):
     type_, encoding = parse_content_type(headers)
     decoded_body = body.decode(encoding)
 
+    # There is one api that just returns `ok` instead of json. In order to have a consistent API we decided to modify the returned payload into a dict.
     if type_ == "application/json":
-        return json.loads(decoded_body)
+        payload = json.loads(decoded_body)
     else:
-        return decoded_body
+        if decoded_body == "ok":
+            payload = {"ok": True}
+        else:
+            payload = {"ok": False, "data": decoded_body}
+
+    return payload
 
 
-def parse_content_type(headers):
+def parse_content_type(headers: MutableMapping) -> Tuple[Optional[str], str]:
     """
     Find content-type and encoding of the response
 
@@ -112,11 +124,18 @@ def parse_content_type(headers):
         return type_, encoding
 
 
-def prepare_request(url, data, headers, global_headers, token, as_json=None):
+def prepare_request(
+    url: Union[str, methods],
+    data: Optional[MutableMapping],
+    headers: Optional[MutableMapping],
+    global_headers: MutableMapping,
+    token: str,
+    as_json: Optional[bool] = None,
+) -> Tuple[str, Union[str, MutableMapping], MutableMapping]:
     """
     Prepare outgoing request
 
-    Create url, headers, add token to the body if needed json encode it
+    Create url, headers, add token to the body and if needed json encode it
 
     Args:
         url: :class:`slack.methods` item or string of url
@@ -131,8 +150,9 @@ def prepare_request(url, data, headers, global_headers, token, as_json=None):
 
     if isinstance(url, methods):
         as_json = as_json or url.value[3]
-        url = url.value[0]
+        real_url = url.value[0]
     else:
+        real_url = url
         as_json = False
 
     if not headers:
@@ -140,32 +160,35 @@ def prepare_request(url, data, headers, global_headers, token, as_json=None):
     else:
         headers = {**global_headers, **headers}
 
-    if url.startswith(HOOK_URL):
-        data, headers = _prepare_json_request(data, token, headers)
-    elif url.startswith(ROOT_URL) and not as_json:
-        data = _prepare_form_encoded_request(data, token)
-    elif url.startswith(ROOT_URL) and as_json:
-        data, headers = _prepare_json_request(data, token, headers)
+    payload: Optional[Union[str, MutableMapping]] = None
+    if real_url.startswith(HOOK_URL) or (real_url.startswith(ROOT_URL) and as_json):
+        payload, headers = _prepare_json_request(data, token, headers)
+    elif real_url.startswith(ROOT_URL) and not as_json:
+        payload = _prepare_form_encoded_request(data, token)
     else:
-        url = ROOT_URL + url
-        data = _prepare_form_encoded_request(data, token)
+        real_url = ROOT_URL + real_url
+        payload = _prepare_form_encoded_request(data, token)
 
-    return url, data, headers
+    return real_url, payload, headers
 
 
-def _prepare_json_request(data, token, headers):
+def _prepare_json_request(
+    data: Optional[MutableMapping], token: str, headers: MutableMapping
+) -> Tuple[str, MutableMapping]:
     headers["Authorization"] = f"Bearer {token}"
     headers["Content-type"] = "application/json; charset=utf-8"
 
     if isinstance(data, events.Message):
-        data = data.to_json()
+        payload = data.to_json()
     else:
-        data = json.dumps(data or {})
+        payload = json.dumps(data or {})
 
-    return data, headers
+    return payload, headers
 
 
-def _prepare_form_encoded_request(data, token):
+def _prepare_form_encoded_request(
+    data: Optional[MutableMapping], token: str
+) -> MutableMapping:
     if isinstance(data, events.Message):
         data = data.serialize()
 
@@ -177,7 +200,7 @@ def _prepare_form_encoded_request(data, token):
     return data
 
 
-def decode_response(status, headers, body):
+def decode_response(status: int, headers: MutableMapping, body: bytes) -> dict:
     """
     Decode incoming response
 
@@ -196,7 +219,11 @@ def decode_response(status, headers, body):
     return data
 
 
-def find_iteration(url, itermode=None, iterkey=None):
+def find_iteration(
+    url: Union[methods, str],
+    itermode: Optional[str] = None,
+    iterkey: Optional[str] = None,
+) -> Tuple[str, str]:
     """
     Find iteration mode and iteration key for a given :class:`slack.methods`
 
@@ -223,8 +250,14 @@ def find_iteration(url, itermode=None, iterkey=None):
 
 
 def prepare_iter_request(
-    url, data, *, iterkey=None, itermode=None, limit=200, itervalue=None
-):
+    url: Union[methods, str],
+    data: MutableMapping,
+    *,
+    iterkey: Optional[str] = None,
+    itermode: Optional[str] = None,
+    limit: int = 200,
+    itervalue: Optional[Union[str, int]] = None,
+) -> Tuple[MutableMapping, str, str]:
     """
     Prepare outgoing iteration request
 
@@ -256,7 +289,7 @@ def prepare_iter_request(
     return data, iterkey, itermode
 
 
-def decode_iter_request(data):
+def decode_iter_request(data: dict) -> Optional[Union[str, int]]:
     """
     Decode incoming response from an iteration request
 
@@ -277,8 +310,10 @@ def decode_iter_request(data):
     elif "has_more" in data and data["has_more"] and "latest" in data:
         return data["messages"][-1]["ts"]
 
+    return None
 
-def discard_event(event, bot_id=None):
+
+def discard_event(event: events.Event, bot_id: str = None) -> bool:
     """
     Check if the incoming event needs to be discarded
 
@@ -301,7 +336,7 @@ def discard_event(event, bot_id=None):
     return False
 
 
-def need_reconnect(event):
+def need_reconnect(event: events.Event) -> bool:
     """
     Check if RTM needs reconnecting
 
@@ -317,7 +352,9 @@ def need_reconnect(event):
         return False
 
 
-def validate_request_signature(body, headers, signing_secret=None):
+def validate_request_signature(
+    body: str, headers: MutableMapping, signing_secret: str
+) -> None:
     """
     Validate incoming request signature using the application signing secret.
 
