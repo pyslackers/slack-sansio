@@ -39,7 +39,6 @@ setuptools.setup(
     description="(a)sync Slack API library",
     keywords=["bot", "slack", "api", "sans-io", "async"],
     packages=setuptools.find_packages(),
-    zip_safe=True,
     install_requires=requires["install"],
     extras_require=requires,
     # python_requires='>=3.6',
@@ -56,4 +55,6 @@ setuptools.setup(
     license="MIT",
     url="https://github.com/pyslackers/slack-sansio",
     version=find_version(),
+    include_package_data=True,
+    package_data={"slack": ["py.typed"]},
 )

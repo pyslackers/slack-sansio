@@ -75,6 +75,8 @@ dev
 
 * Rework of the pytest plugin ``slack.tests.plugins``.
 * Remove deprecated rate limit code.
+* Add type annotations & fix found bugs.
+* Move ``slack.exceptions.UnknownActionType`` to ``slack.action.UnknownActionType``.
 
 0.5.1
 `````
