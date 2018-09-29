@@ -43,7 +43,7 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.viewcode",
     "sphinxcontrib.asyncio",
-    "sphinxcontrib.napoleon",
+    "sphinx.ext.napoleon",
     "sphinx.ext.intersphinx",
 ]
 suppress_warnings = ["image.nonlocal_uri"]
