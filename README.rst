@@ -70,6 +70,11 @@ The library also provide an abstract base class on which to built I/O implementa
 Changelog
 ---------
 
+0.6.1
+`````
+
+* Fix Documentation build.
+
 0.6.0
 `````
 
