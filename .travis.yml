@@ -26,7 +26,7 @@ env:
     - secure: "XzDel/RxXPXLejpaJju9WzwaWmAmQMgJJ5RXjBavfn9I7X/vPMkzqc1qVKkoG7n0C/k+E3cCxl72MP97z+f70ohzZDKjCFWHzNRpsEh7HBWTSvZCQIyJCB8fi/vRHpvLzDs2VxxnvFxARa037w1opQYN2MRcwziQ+t6KfkEgnDfWfabIphnsuL+Iv88zr2CZEKIlhdkkAh1jil98/kNaJQglknHIlAEYFwHPi9dMWfsX2w3dEPgpnUOsMdVcqUfjwT0fZ8mmK7tdKI9rfnKqCWl0g1ZHlLw1DOSXxajZdJK5Zjf2eUz5vXSCzpz1zev6zpk/n5PVN820CVDfrOnq826fD5SC9oxgVEeuAdxkwLxuEcXrdDFPBn3LC3hZY4fJjn0M1SKreIcOP4QmOxCb62MaA2QEjOMZz+HwzoRTS/cqM0qR7Rw17ufMKN9ThqcJxT0AkkvvldqZ3mekKCrrHxgl2WqW2yw6i3pF/WmQik+EgWLBlBI3El5YlqEEpPWHZSW3KyATMHkoBsMwO1w++ATisDDpQKO52uXgMEcuAPVAOcb/bjbuRNm5dyfyuQbzCWQE8HYo84aKRCu9O+V53Bvf/BiO+zMNL6u3IqAkwbka713BSuH038Vu14Ir3lCe0PvU4/MnuuPzC3Y37mdK2qmNE2QXbuZ/ZgMmGKB6cjA="
 
 install:
-  - pip install poetry tox-
+  - pip install poetry tox
   - poetry install
   - pip install tox-travis
 
@@ -45,12 +45,7 @@ deploy:
   - provider: script
     script: poetry publish --username Ovv --password $PYPI_PASS --build
     on:
-      repo: Eyepea/pillars
+      repo: pyslackers/slack-sansio
       branch: master
       python: '3.7'
-    tags: true
-        on:
-          repo: pyslackers/slack-sansio
-          branch: master
-          python: '3.7'
-          tags: true
+      tags: true
