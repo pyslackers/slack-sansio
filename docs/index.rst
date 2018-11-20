@@ -23,7 +23,6 @@ In development
 
  - `Curio <http://curio.readthedocs.io>`_ with `asks <http://asks.readthedocs.io>`_.
  - `Trio <http://trio.readthedocs.io/>`_ with `asks <http://asks.readthedocs.io>`_.
- - `Twisted <https://twistedmatrix.com/trac/>`_ with `treq <https://github.com/twisted/treq>`_.
 
 Installation
 ------------
@@ -54,7 +53,6 @@ Examples are dependant of the implementations and can be found on the documentat
  - :ref:`Aiohttp examples <aiohttp-examples>`
  - :ref:`Curio examples <curio-examples>`
  - :ref:`Trio examples <trio-examples>`
- - :ref:`Treq examples <treq-examples>`
 
 Methods
 -------
@@ -84,7 +82,6 @@ Navigation
    implementations/aiohttp
    implementations/curio
    implementations/trio
-   implementations/treq
    sansio
    exceptions
    testing

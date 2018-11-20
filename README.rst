@@ -31,8 +31,6 @@ Slack-sansio is `available on PyPI <https://pypi.org/project/slack-sansio/>`_.
     $ pip3 install slack-sansio[aiohttp]    # Aiohttp implementation requirements
     $ pip3 install slack-sansio[curio]      # Curio implementation requirements
     $ pip3 install slack-sansio[trio]       # Trio implementation requirements
-    $ pip3 install slack-sansio[treq]       # Treq implementation requirements
-    $ pip3 install slack-sansio[full]       # All implementations requirements
 
 Quickstart
 ----------
@@ -63,7 +61,6 @@ supported this library provide the base tools to ease the use of the Slack API.
 
 * `Curio <http://curio.readthedocs.io>`_ with `asks <http://asks.readthedocs.io>`_ (In development).
 * `Trio <http://trio.readthedocs.io/>`_ with `asks <http://asks.readthedocs.io>`_ (In development).
-* `Twisted <https://twistedmatrix.com/trac/>`_ with `treq <https://github.com/twisted/treq>`_ (In development).
 
 The library also provide an abstract base class on which to built I/O implementation.
 
