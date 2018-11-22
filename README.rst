@@ -67,6 +67,12 @@ The library also provide an abstract base class on which to built I/O implementa
 Changelog
 ---------
 
+0.7.0
+`````
+
+* Migrate to poetry for dependencies management
+* Remove `treq` implementation.
+
 0.6.1
 `````
 
