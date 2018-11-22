@@ -21,27 +21,22 @@ matrix:
       dist: xenial
       sudo: true
 
+env:
+  global: 
+    - secure: "XzDel/RxXPXLejpaJju9WzwaWmAmQMgJJ5RXjBavfn9I7X/vPMkzqc1qVKkoG7n0C/k+E3cCxl72MP97z+f70ohzZDKjCFWHzNRpsEh7HBWTSvZCQIyJCB8fi/vRHpvLzDs2VxxnvFxARa037w1opQYN2MRcwziQ+t6KfkEgnDfWfabIphnsuL+Iv88zr2CZEKIlhdkkAh1jil98/kNaJQglknHIlAEYFwHPi9dMWfsX2w3dEPgpnUOsMdVcqUfjwT0fZ8mmK7tdKI9rfnKqCWl0g1ZHlLw1DOSXxajZdJK5Zjf2eUz5vXSCzpz1zev6zpk/n5PVN820CVDfrOnq826fD5SC9oxgVEeuAdxkwLxuEcXrdDFPBn3LC3hZY4fJjn0M1SKreIcOP4QmOxCb62MaA2QEjOMZz+HwzoRTS/cqM0qR7Rw17ufMKN9ThqcJxT0AkkvvldqZ3mekKCrrHxgl2WqW2yw6i3pF/WmQik+EgWLBlBI3El5YlqEEpPWHZSW3KyATMHkoBsMwO1w++ATisDDpQKO52uXgMEcuAPVAOcb/bjbuRNm5dyfyuQbzCWQE8HYo84aKRCu9O+V53Bvf/BiO+zMNL6u3IqAkwbka713BSuH038Vu14Ir3lCe0PvU4/MnuuPzC3Y37mdK2qmNE2QXbuZ/ZgMmGKB6cjA="
+
 install:
-  - pip install pipenv
-  - pipenv install --deploy --dev --ignore-pipfile
+  - pip install poetry tox tox-travis coveralls
 
 script:
-  - if [[ $TRAVIS_PYTHON_VERSION = "3.7" ]];
-    then
-      pipenv run slack/tests/test.sh;
-    else
-      pipenv run pytest test --verbose --cov;
-    fi
+  - tox
 
 after_success:
   - coveralls
 
 deploy:
-  - provider: pypi
-    distributions: sdist bdist_wheel
-    user: Ovv
-    password:
-      secure: lldoHkBPyFjcMEWpOMzaXeNdNl1JUgodXfrm9TPT4DYNcQCDU01f6xm8uShBT47mz+tbrUnx2rFhZmTmZAqZDODo7pmkukSrhBRpbLroEp6045MmT4P4aJjoGJooksGouqOsJjqE8yGwyinCVsv0ZNi1RZDxxuUw3Ye+HtDllMNv4XUeEBxOY5LtKpGW/+MF0QZiDggvR2bcLlMJz2EJvtIzhdRtl7fy2eAdrsQoyXhqt7Zuu0y/sc4YTiRt1adLFFFOIDL6mtL76D2eHBQm5oHJM5TtZi0gs633567fyEZ6Gm9fxSo0Ba9L7sen6ApgJLx2yba1+7ititXg7/U7+DvgmFT3Tk294cBRGF/3rhzt60p1xYO1b6tyFK5GTPghidAJZb/OQoMb9L6iZhCmMCukvdW0/241yiLdSQfMbeCzO8diwpwsJiv7k8pWtGTtl2+PtuH26zyZZeuQpu3BlctF5r/hdaiuggoN87RzlOLwqbIRfHZfMGA24LJNbtyRcu3mvaZwFFrRq5NWYqwU2VHQB/plBvB4c+FRyKRIcbiN/G+31WEK3cuMPaKfXM0opJwVpLNA320IHgVxZu0b78Exr2Qs48cBYiEl/BtHYPRYDGscSI5LYZ5cPrGcrhp7Z6jBFTHenq+IW/O21qtxv1h9R9VXyatIGHSW0U/dLOA=
+  - provider: script
+    script: poetry publish --username Ovv --password $PYPI_PASS --build
     on:
       repo: pyslackers/slack-sansio
       branch: master

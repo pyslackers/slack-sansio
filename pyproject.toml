@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "slack-sansio"
+version = "0.7.0"
+description = "Python (a)sync Slack API library"
+authors = ["Ovv <contact@ovv.wtf>"]
+license = "MIT"
+packages = [
+    {include = "slack" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+requests = {version = "^2.20",optional = true}
+websocket-client = {version = "^0.54.0",optional = true}
+aiohttp = {version = "^3.4",optional = true}
+curio = {version = "^0.9.0",optional = true}
+asks = {version = "^2.2",optional = true}
+trio = {version = "^0.9.0",optional = true}
+ 
+[tool.poetry.dev-dependencies]
+flake8 = "^3.6"
+black = "^18.3-alpha.0"
+isort = "^4.3"
+tox = "^3.5"
+sphinx = "^1.8"
+sphinxcontrib-asyncio = "^0.2.0"
+pytest = "^4.0"
+coverage = "^4.5"
+pytest-coverage = "^0.0.0"
+pytest-asyncio = "^0.9.0"
+asynctest = "^0.12.2"
+mock = "^2.0"
+mypy = "^0.641.0"
+
+[tool.poetry.extras]
+requests = ["requests", "websocket-client"]
+aiohttp = ["aiohttp"]
+curio = ["curio", "asks"]
+trio = ["trio", "asks"]
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
