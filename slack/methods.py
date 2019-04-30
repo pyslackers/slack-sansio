@@ -51,6 +51,7 @@ class Methods(Enum):
 
     # chat
     CHAT_DELETE = (ROOT_URL + "chat.delete", None, None, True)
+    CHAT_GET_PERMALINK = (ROOT_URL + "chat.getPermalink", None, None, False)
     CHAT_ME_MESSAGE = (ROOT_URL + "chat.meMessage", None, None, True)
     CHAT_POST_EPHEMERAL = (ROOT_URL + "chat.postEphemeral", None, None, True)
     CHAT_POST_MESSAGE = (ROOT_URL + "chat.postMessage", None, None, True)
