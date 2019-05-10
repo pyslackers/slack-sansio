@@ -1,6 +1,6 @@
 import pytest
 import slack
-from slack.actions import Action
+from slack.actions import Action, Router
 
 from . import data
 
@@ -72,6 +72,56 @@ class TestActionRouter:
         assert action_router._routes["test_action"]["*"][0] is handler
         assert action_router._routes["test_action"]["*"][1] is handler_bis
 
+    def test_register_block(self, action_router: Router):
+        def handler():
+            pass
+
+        action_router.register_block_action("test_block_id", handler)
+
+        assert len(action_router._routes["test_block_id"]["*"]) == 1
+        assert action_router._routes["test_block_id"]["*"][0] is handler
+
+    def test_register_block_action_id(self, action_router: Router):
+        def handler():
+            pass
+
+        action_router.register_block_action("test_block_id", handler, action_id="test_action_id")
+
+        assert len(action_router._routes["test_block_id"]["test_action_id"]) == 1
+        assert action_router._routes["test_block_id"]["test_action_id"][0] is handler
+
+    def test_multiple_register_block(self, action_router: Router):
+        def handler():
+            pass
+
+        def handler_bis():
+            pass
+
+        action_router.register_block_action("test_block_id", handler)
+        action_router.register_block_action("test_block_id", handler_bis)
+
+        assert len(action_router._routes["test_block_id"]["*"]) == 2
+        assert action_router._routes["test_block_id"]["*"][0] is handler
+        assert action_router._routes["test_block_id"]["*"][1] is handler_bis
+
+    def test_register_dialog_submission(self, action_router: Router):
+        def handler():
+            pass
+
+        action_router.register_dialog_submission("test_action", handler)
+
+        assert len(action_router._routes["test_action"]["*"]) == 1
+        assert action_router._routes["test_action"]["*"][0] is handler
+
+    def test_register_interactive_message(self, action_router: Router):
+        def handler():
+            pass
+
+        action_router.register_interactive_message("test_action", handler)
+
+        assert len(action_router._routes["test_action"]["*"]) == 1
+        assert action_router._routes["test_action"]["*"][0] is handler
+
     def test_dispath(self, action, action_router):
         def handler():
             pass
@@ -110,6 +160,52 @@ class TestActionRouter:
         assert len(handlers) == 1
         assert handlers[0] is handler
 
+    def test_dispatch_action_specific_registration_methods(self, action, action_router):
+        def handler():
+            pass
+
+        act = Action.from_http(action)
+
+        if act["type"] in ("interactive_message", "message_action"):
+            action_router.register_interactive_message("test_action", handler)
+        elif act["type"] == "dialog_submission":
+            action_router.register_dialog_submission("test_action", handler)
+        elif act["type"] == "block_actions":
+            action_router.register_block_action("test_block_id", handler)
+
+        handlers = list()
+        for h in action_router.dispatch(act):
+            handlers.append(h)
+        assert len(handlers) == 1
+        assert handlers[0] is handler
+
+    def test_dispatch_block_action(self, block_action, action_router):
+        def handler():
+            pass
+
+        act = Action.from_http(block_action)
+        action_router.register_block_action("test_block_id", handler)
+        action_router.register("test_other_block_id", handler)
+
+        handlers = list()
+        for h in action_router.dispatch(act):
+            handlers.append(h)
+        assert len(handlers) == 1
+        assert handlers[0] is handler
+
+    def test_dispatch_block_action_with_id(self, block_action, action_router):
+        def handler():
+            pass
+
+        act = Action.from_http(block_action)
+        action_router.register_block_action("test_block_id", handler, action_id="test_action_id")
+
+        handlers = list()
+        for h in action_router.dispatch(act):
+            handlers.append(h)
+        assert len(handlers) == 1
+        assert handlers[0] is handler
+
     def test_multiple_dispatch(self, action, action_router):
         def handler():
             pass
@@ -120,6 +216,25 @@ class TestActionRouter:
         act = Action.from_http(action)
         action_router.register("test_action", handler)
         action_router.register("test_action", handler_bis)
+
+        handlers = list()
+        for h in action_router.dispatch(act):
+            handlers.append(h)
+
+        assert len(handlers) == 2
+        assert handlers[0] is handler
+        assert handlers[1] is handler_bis
+
+    def test_multiple_block_dispatch(self, block_action, action_router):
+        def handler():
+            pass
+
+        def handler_bis():
+            pass
+
+        act = Action.from_http(block_action)
+        action_router.register_block_action("test_block_id", handler)
+        action_router.register_block_action("test_block_id", handler_bis)
 
         handlers = list()
         for h in action_router.dispatch(act):

@@ -21,7 +21,6 @@ try:
 except ImportError:
     SlackAPIRequest = None  # type: ignore
 
-
 TOKEN = "abcdefg"
 
 
@@ -192,6 +191,13 @@ def action(request):
         payload = copy.deepcopy(request.param)
 
     return payload
+
+
+@pytest.fixture(params={
+    **data.BlockAction.__members__  # type: ignore
+})
+def block_action(request):
+    return copy.deepcopy(data.BlockAction[request.param].value)
 
 
 # @pytest.fixture(params={**data.InteractiveMessage.__members__})

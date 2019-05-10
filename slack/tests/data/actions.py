@@ -65,10 +65,40 @@ message_action = {
     "response_url": "https://hooks.slack.com/actions/T000AAA0A/123456789123/YTC81HsJRuuGSLVFbSnlkJlh",
 }
 
+block_action = {
+    "type": "block_actions",
+    "token": "supersecuretoken",
+    "action_ts": "987654321.000001",
+    "team": {"id": "T000AAA0A", "domain": "team"},
+    "user": {"id": "U000AA000", "name": "username"},
+    "channel": {"id": "C00000A00", "name": "general"},
+    "trigger_id": "418799722116.77329528181.9c7441638716b0b9b698f3d8ae73d9c1",
+    "message_ts": "1534605601.000100",
+    "message": {
+        "type": "message",
+        "user": "U000AA000",
+        "text": "test message",
+        "client_msg_id": "904f281d-338e-4621-a56f-afbfc80b3c59",
+        "ts": "1534605601.000100",
+    },
+    "actions": [
+        {
+            "type": "static_select",
+            "block_id": "test_block_id",
+            "action_id": "test_action_id",
+            "selected_option": {"text": {"type": "plain_text", "text": "Edit it"}, "value": "value-0"},
+            "placeholder": {"type": "plain_text", "text": "Manage"},
+            "action_ts": "1557505776.632169"
+        }
+    ],
+    "response_url": "https://hooks.slack.com/actions/T000AAA0A/123456789123/YTC81HsJRuuGSLVFbSnlkJlh",
+}
+
 raw_button_ok = {"payload": json.dumps(button_ok)}
 raw_button_cancel = {"payload": json.dumps(button_cancel)}
 raw_dialog_submission = {"payload": json.dumps(dialog_submission)}
 raw_message_action = {"payload": json.dumps(message_action)}
+raw_block_action = {"payload": json.dumps(block_action)}
 
 
 class InteractiveMessage(Enum):
@@ -103,3 +133,12 @@ class MessageAction(Enum):
     """
 
     action = raw_message_action
+
+
+class BlockAction(Enum):
+    """
+    List of available block action for testing
+
+        - option_select
+    """
+    option_select = raw_block_action
