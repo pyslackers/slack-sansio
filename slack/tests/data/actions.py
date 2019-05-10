@@ -86,9 +86,12 @@ block_action = {
             "type": "static_select",
             "block_id": "test_block_id",
             "action_id": "test_action_id",
-            "selected_option": {"text": {"type": "plain_text", "text": "Edit it"}, "value": "value-0"},
+            "selected_option": {
+                "text": {"type": "plain_text", "text": "Edit it"},
+                "value": "value-0",
+            },
             "placeholder": {"type": "plain_text", "text": "Manage"},
-            "action_ts": "1557505776.632169"
+            "action_ts": "1557505776.632169",
         }
     ],
     "response_url": "https://hooks.slack.com/actions/T000AAA0A/123456789123/YTC81HsJRuuGSLVFbSnlkJlh",
@@ -141,4 +144,5 @@ class BlockAction(Enum):
 
         - option_select
     """
+
     option_select = raw_block_action

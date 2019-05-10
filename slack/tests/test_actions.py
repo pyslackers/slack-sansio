@@ -85,7 +85,9 @@ class TestActionRouter:
         def handler():
             pass
 
-        action_router.register_block_action("test_block_id", handler, action_id="test_action_id")
+        action_router.register_block_action(
+            "test_block_id", handler, action_id="test_action_id"
+        )
 
         assert len(action_router._routes["test_block_id"]["test_action_id"]) == 1
         assert action_router._routes["test_block_id"]["test_action_id"][0] is handler
@@ -198,7 +200,9 @@ class TestActionRouter:
             pass
 
         act = Action.from_http(block_action)
-        action_router.register_block_action("test_block_id", handler, action_id="test_action_id")
+        action_router.register_block_action(
+            "test_block_id", handler, action_id="test_action_id"
+        )
 
         handlers = list()
         for h in action_router.dispatch(act):

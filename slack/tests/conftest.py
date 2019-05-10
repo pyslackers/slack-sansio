@@ -193,9 +193,7 @@ def action(request):
     return payload
 
 
-@pytest.fixture(params={
-    **data.BlockAction.__members__  # type: ignore
-})
+@pytest.fixture(params={**data.BlockAction.__members__})  # type: ignore
 def block_action(request):
     return copy.deepcopy(data.BlockAction[request.param].value)
 
