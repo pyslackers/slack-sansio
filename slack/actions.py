@@ -98,9 +98,58 @@ class Router:
 
         self._routes[callback_id][name].append(handler)
 
+    def register_interactive_message(
+        self, callback_id: str, handler: Any, name: str = "*"
+    ) -> None:
+        """
+        Register a new handler for a specific :class:`slack.actions.Action` `callback_id`.
+        Optional routing based on the action name too.
+
+        The name argument is useful for actions of type `interactive_message` to provide
+        a different handler for each individual action.
+
+        Internally calls the base :meth:`register<slack.actions.Router.register>` method for
+        actual registration.
+
+        Args:
+            callback_id: Callback_id the handler is interested in
+            handler: Callback
+            name: Name of the action (optional).
+        """
+        self.register(callback_id, handler, name)
+
+    def register_block_action(
+        self, block_id: str, handler: Any, action_id: str = "*"
+    ) -> None:
+        """
+        Register a new handler for a block-based :class:`slack.actions.Action`.
+        Internally uses the base `register` method for actual registration.
+
+        Optionally provides routing based on a specific `action_id` if present.
+
+        Args:
+            block_id: The action block_id the handler is interested in
+            handler: Callback
+            action_id: specific action_id for the action (optional)
+        """
+        self.register(block_id, handler, action_id)
+
+    def register_dialog_submission(self, callback_id: str, handler: Any):
+        """
+        Registers a new handler for a `dialog_submission` :class:`slack.actions.Action`.
+
+        Internally calls the base :meth:`register<slack.actions.Router.register>` method for
+        actual registration.
+
+        Args:
+            callback_id: Callback_id the handler is interested in
+            handler: Callback
+        """
+        self.register(callback_id, handler)
+
     def dispatch(self, action: Action) -> Any:
         """
-        Yields handlers matching the incoming :class:`slack.actions.Action` `callback_id`.
+        Yields handlers matching the incoming :class:`slack.actions.Action` `callback_id` or `action_id`.
 
         Args:
             action: :class:`slack.actions.Action`
@@ -108,12 +157,23 @@ class Router:
         Yields:
             handler
         """
-        LOG.debug("Dispatching action %s, %s", action["type"], action["callback_id"])
+        if "callback_id" in action:
+            LOG.debug(
+                "Dispatching action %s, %s", action["type"], action["callback_id"]
+            )
+        else:
+            LOG.debug(
+                "Dispatching action %s, %s",
+                action["actions"][0]["type"],
+                action["actions"][0]["action_id"],
+            )
 
         if action["type"] == "interactive_message":
             yield from self._dispatch_interactive_message(action)
         elif action["type"] in ("dialog_submission", "message_action"):
             yield from self._dispatch_action(action)
+        elif action["type"] == "block_actions":
+            yield from self._dispatch_block_actions(action)
         else:
             raise UnknownActionType(action)
 
@@ -125,6 +185,15 @@ class Router:
             yield from self._routes[action["callback_id"]][action["actions"][0]["name"]]
         else:
             yield from self._routes[action["callback_id"]].get("*", [])
+
+    def _dispatch_block_actions(self, action: Action) -> Iterator[Any]:
+        block_id = action["actions"][0]["block_id"]
+        action_id = action["actions"][0].get("action_id", "*")
+
+        if action_id in self._routes[block_id]:
+            yield from self._routes[block_id].get(action_id, [])
+        else:
+            yield from self._routes[block_id].get("*", [])
 
 
 class UnknownActionType(Exception):
