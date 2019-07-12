@@ -90,9 +90,9 @@ class TestRequest:
         assert "Content-type" in headers
         assert headers["Content-type"] == "application/json; charset=utf-8"
 
-    def test_prepare_request_body_message(self, token, message):
+    def test_prepare_request_body_message(self, token, slack_message):
 
-        msg = Event.from_http(message)
+        msg = Event.from_http(slack_message)
         _, body, headers = sansio.prepare_request(methods.AUTH_TEST, msg, {}, {}, token)
 
         assert isinstance(body, str)
@@ -108,9 +108,9 @@ class TestRequest:
         assert isinstance(body.get("attachments", ""), str)
         assert body["token"] == token
 
-    def test_prepare_request_body_message_force_json(self, token, message):
+    def test_prepare_request_body_message_force_json(self, token, slack_message):
 
-        msg = Event.from_http(message)
+        msg = Event.from_http(slack_message)
         _, body, headers = sansio.prepare_request(
             methods.AUTH_REVOKE, msg, {}, {}, token, as_json=True
         )
@@ -120,9 +120,9 @@ class TestRequest:
         assert "Content-type" in headers
         assert headers["Content-type"] == "application/json; charset=utf-8"
 
-    def test_prepare_request_message_hook(self, token, message):
+    def test_prepare_request_message_hook(self, token, slack_message):
 
-        msg = Event.from_http(message)
+        msg = Event.from_http(slack_message)
         _, body, headers = sansio.prepare_request(
             "https://hooks.slack.com/abcdefg", msg, {}, {}, token
         )
@@ -414,15 +414,15 @@ class TestResponse:
 
 
 class TestIncomingEvent:
-    @pytest.mark.parametrize("event", ("bot", "bot_edit"), indirect=True)
-    def test_discard_event(self, event):
-        ev = Event.from_http(event)
+    @pytest.mark.parametrize("slack_event", ("bot", "bot_edit"), indirect=True)
+    def test_discard_event(self, slack_event):
+        ev = Event.from_http(slack_event)
         assert sansio.discard_event(ev, "B0AAA0A00") is True
 
-    def test_not_discard_event(self, event):
-        ev = Event.from_http(event)
+    def test_not_discard_event(self, slack_event):
+        ev = Event.from_http(slack_event)
         assert sansio.discard_event(ev, "B0AAA0A01") is False
 
-    def test_no_need_reconnect(self, event):
-        ev = Event.from_http(event)
+    def test_no_need_reconnect(self, slack_event):
+        ev = Event.from_http(slack_event)
         assert sansio.need_reconnect(ev) is False

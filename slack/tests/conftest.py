@@ -1,25 +1,21 @@
 import copy
 import json
 import time
-import functools
 from unittest.mock import Mock
 
 import pytest
-import requests
 import asynctest
-from slack.events import Event, EventRouter, MessageRouter
+from slack.events import EventRouter, MessageRouter
 from slack.io.abc import SlackAPI
-from slack.actions import Action
 from slack.actions import Router as ActionRouter
 from slack.commands import Router as CommandRouter
-from slack.commands import Command
 
 from . import data
 
 try:
     from slack.io.requests import SlackAPI as SlackAPIRequest
 except ImportError:
-    SlackAPIRequest = None  # type: ignore
+    SlackAPIRequest = int  # type: ignore
 
 TOKEN = "abcdefg"
 
@@ -53,83 +49,117 @@ def rtm_iterator_non_async(request):
     return events
 
 
-@pytest.fixture(params=(FakeIO,))
-def io_client(request):
-    return request.param
+@pytest.fixture(params=({},))
+def slack_client(request):
 
+    if "status" not in request.param:
+        request.param["status"] = 200
 
-@pytest.fixture(params=({"token": TOKEN},))
-def client(request, io_client):
-    default_request = {
-        "status": 200,
-        "body": {"ok": True},
-        "headers": {"content-type": "application/json; charset=utf-8"},
-    }
+    if "body" not in request.param:
+        request.param["body"] = {"ok": True}
 
-    if "_request" not in request.param:
-        request.param["_request"] = default_request
-    elif isinstance(request.param["_request"], dict):
-        request.param["_request"] = _default_response(request.param["_request"])
-    elif isinstance(request.param["_request"], list):
-        for index, item in enumerate(request.param["_request"]):
-            request.param["_request"][index] = _default_response(item)
+    if "headers" not in request.param:
+        request.param["headers"] = {"content-type": "application/json; charset=utf-8"}
+
+    client_param = request.param.get("client_parameters", {})
+    if "token" not in client_param:
+        client_param["token"] = TOKEN
+
+    if "client" in request.param:
+        client = request.param["client"]
     else:
-        raise ValueError("Invalid `_request` parameters: %s", request.param["_request"])
+        client = FakeIO
 
-    if "token" not in request.param:
-        request.param["token"] = TOKEN
+    slackclient = client(**client_param)
 
-    slackclient = io_client(
-        **{k: v for k, v in request.param.items() if not k.startswith("_")}
-    )
-
-    if isinstance(request.param["_request"], dict):
-        return_value = (
-            request.param["_request"]["status"],
-            json.dumps(request.param["_request"]["body"]).encode(),
-            request.param["_request"]["headers"],
+    if all(
+        isinstance(value, list)
+        for value in (
+            request.param["status"],
+            request.param["body"],
+            request.param["headers"],
         )
-        if isinstance(slackclient, SlackAPIRequest):
-            slackclient._request = Mock(return_value=return_value)
-        else:
-            slackclient._request = asynctest.CoroutineMock(return_value=return_value)
-    else:
-        responses = [
-            (
-                response["status"],
-                json.dumps(response["body"]).encode(),
-                response["headers"],
-            )
-            for response in request.param["_request"]
-        ]
+    ):
+        responses = []
+        for status, body, headers in zip(
+            request.param["status"], request.param["body"], request.param["headers"]
+        ):
+            responses.append((status, json.dumps(_fill_body(body)).encode(), headers))
+
         if isinstance(slackclient, SlackAPIRequest):
             slackclient._request = Mock(side_effect=responses)
         else:
             slackclient._request = asynctest.CoroutineMock(side_effect=responses)
+    elif any(
+        isinstance(value, list)
+        for value in (
+            request.param["status"],
+            request.param["body"],
+            request.param["headers"],
+        )
+    ):
+        if not isinstance(request.param["status"], list):
+            request.param["status"] = [request.param["status"]]
+        if not isinstance(request.param["body"], list):
+            request.param["body"] = [request.param["body"]]
+        if not isinstance(request.param["headers"], list):
+            request.param["headers"] = [request.param["headers"]]
 
+        responses = list()
+        for index, _ in enumerate(
+            max(
+                request.param["status"],
+                request.param["body"],
+                request.param["headers"],
+                key=lambda x: len(x),
+            )
+        ):
+            try:
+                status = request.param["status"][index]
+            except IndexError:
+                status = request.param["status"][0]
+
+            try:
+                body = request.param["body"][index]
+            except IndexError:
+                body = request.param["body"][0]
+
+            try:
+                headers = request.param["headers"][index]
+            except IndexError:
+                headers = request.param["headers"][0]
+
+            responses.append((status, json.dumps(_fill_body(body)).encode(), headers))
+
+        if isinstance(slackclient, SlackAPIRequest):
+            slackclient._request = Mock(side_effect=responses)
+        else:
+            slackclient._request = asynctest.CoroutineMock(side_effect=responses)
+    else:
+        return_value = (
+            request.param["status"],
+            json.dumps(_fill_body(request.param["body"])).encode(),
+            request.param["headers"],
+        )
+
+        if isinstance(slackclient, SlackAPIRequest):
+            slackclient._request = Mock(return_value=return_value)
+        else:
+            slackclient._request = asynctest.CoroutineMock(return_value=return_value)
+        print(return_value)
     return slackclient
 
 
-def _default_response(response):
-    default_response = {
-        "status": 200,
-        "body": {"ok": True},
-        "headers": {"content-type": "application/json; charset=utf-8"},
-    }
-    response = {**default_response, **response}
-    if "content-type" not in response["headers"]:
-        response["headers"]["content-type"] = default_response["headers"][
-            "content-type"
-        ]
-    if isinstance(response["body"], str):
-        response["body"] = copy.deepcopy(data.Methods[response["body"]].value)
-    return response
+def _fill_body(body):
+    if isinstance(body, str):
+        body = copy.deepcopy(data.Methods[body].value)
+    return body
 
 
 @pytest.fixture(
     params={**data.Events.__members__, **data.Messages.__members__}  # type: ignore
 )
-def event(request):
+def slack_event(request):
     if isinstance(request.param, str):
         try:
             payload = copy.deepcopy(data.Events[request.param].value)
@@ -142,7 +172,7 @@ def event(request):
 
 
 @pytest.fixture(params={**data.Messages.__members__})  # type: ignore
-def message(request):
+def slack_message(request):
     if isinstance(request.param, str):
         payload = copy.deepcopy(data.Messages[request.param].value)
     else:
@@ -178,7 +208,7 @@ def message_router():
         **data.MessageAction.__members__,  # type: ignore
     }
 )
-def action(request):
+def slack_action(request):
     if isinstance(request.param, str):
         try:
             payload = copy.deepcopy(data.InteractiveMessage[request.param].value)
@@ -219,7 +249,7 @@ def action_router():
 
 
 @pytest.fixture(params={**data.Commands.__members__})
-def command(request):
+def slack_command(request):
     if isinstance(request.param, str):
         payload = copy.deepcopy(data.Commands[request.param].value)
     else:

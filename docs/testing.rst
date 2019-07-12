@@ -25,19 +25,15 @@ Available fixtures
     This fixture can be parametrized to return one or more available event from :class:`slack.tests.data.Events`
     and :class:`slack.tests.data.Messages`.
 
-    .. code:: python
-
-        @pytest.mark.parametrize('slack_event', ('channel_deleted', 'simple'), indirect=True)
-        def test_events(slack_event):
-            assert True
+    .. literalinclude:: ../slack/tests/test_examples.py
+        :start-after: # START: TEST EVENTS
+        :end-before: # END: TEST EVENTS
 
     To only get :class:`slack.tests.data.Messages` members you can parametrize the test that way:
 
-    .. code:: python
-
-        @pytest.mark.parametrize("slack_event", {**slack.tests.data.Messages.__members__}, indirect=True)
-        async def test_messages(self, slack_event):
-            assert slack_event["event"]["type"] == "message"
+    .. literalinclude:: ../slack/tests/test_examples.py
+        :start-after: # START: TEST MESSAGES
+        :end-before: # END: TEST MESSAGES
 
 
 .. function:: slack.tests.plugin.slack_action
@@ -47,11 +43,9 @@ Available fixtures
     This fixture can be parametrized to return one or more available action
     from :class:`slack.tests.data.InteractiveMessage` or :class:`slack.tests.data.DialogSubmission`.
 
-    .. code:: python
-
-        @pytest.mark.parametrize('slack_action', ('button_ok', 'button_cancel'), indirect=True)
-        def test_actions(slack_action):
-            assert True
+    .. literalinclude:: ../slack/tests/test_examples.py
+        :start-after: # START: TEST ACTIONS
+        :end-before: # END: TEST ACTIONS
 
 
 .. function:: slack.tests.plugin.slack_command
@@ -60,11 +54,9 @@ Available fixtures
 
     This fixture can be parametrized to return one or more available command from :class:`slack.tests.data.Commands`.
 
-    .. code:: python
-
-        @pytest.mark.parametrize('slack_command', ('text', 'no_text'), indirect=True)
-        def test_commands(slack_command):
-            assert True
+    .. literalinclude:: ../slack/tests/test_examples.py
+        :start-after: # START: TEST COMMANDS
+        :end-before: # END: TEST COMMANDS
 
 
 .. function:: slack.tests.plugin.slack_client
@@ -76,33 +68,35 @@ Available fixtures
         - body: ``{'ok': True}``
         - headers: ``{'content-type': 'application/json; charset=utf-8'}``
 
-    This can be parametrize with the ``_request`` parameter.
+    Parametrize a reponse:
 
-    .. code:: python
-
-        @pytest.mark.asyncio
-        @pytest.mark.parametrize('slack_client', ({'_request': {'body': {'ok': True, 'hello': 'world'}}},),
-         indirect=True)
-        async def test_client(slack_client):
-            data = await slack_client.query(slack.methods.AUTH_TEST)
-            assert data == {'ok': True, 'hello': 'world'}
+    .. literalinclude:: ../slack/tests/test_examples.py
+        :start-after: # START: TEST CLIENT CUSTOM BODY
+        :end-before: # END: TEST CLIENT CUSTOM BODY
 
     The ``body`` parameter of a request can be a string corresponding to one of the methods available
     in :class:`slack.tests.data.Methods`.
 
-    For multiple requests you can set the ``_request`` parameter to a ``list``.
+    .. literalinclude:: ../slack/tests/test_examples.py
+        :start-after: # START: TEST CLIENT BODY
+        :end-before: # END: TEST CLIENT BODY
 
-    .. code:: python
+    Parametrize multiple responses:
 
-        @pytest.mark.asyncio
-        @pytest.mark.parametrize('slack_client', ({'_request': [
-            {'body': 'channels'},
-            {'status': 500}
-        ]},), indirect=True)
-        async def test_client(slack_client):
-            data1 = await slack_client.query(slack.methods.AUTH_TEST)
-            with pytest.raises(slack.exceptions.HTTPException):
-                await slack_client.query(slack.methods.AUTH_TEST)
+    .. literalinclude:: ../slack/tests/test_examples.py
+        :start-after: # START: TEST CLIENT STATUS
+        :end-before: # END: TEST CLIENT STATUS
+
+    .. literalinclude:: ../slack/tests/test_examples.py
+        :start-after: # START: TEST CLIENT ITER
+        :end-before: # END: TEST CLIENT ITER
+
+    Parametrize multiple run:
+
+    .. literalinclude:: ../slack/tests/test_examples.py
+        :start-after: # START: TEST CLIENT MULTIPLE RUN
+        :end-before: # END: TEST CLIENT MULTIPLE RUN
+
 
 Available data
 ==============

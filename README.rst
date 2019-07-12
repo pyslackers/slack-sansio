@@ -44,7 +44,7 @@ Quickstart
     from slack.io.sync import SlackAPI
 
     session = requests.session()
-    slack_client = SlackAPI(token=TOKEN, session=session)
+    client = SlackAPI(token=TOKEN, session=session)
     data = client.query(slack.methods.AUTH_TEST)
     pprint.pprint(data)
 
