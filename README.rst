@@ -67,6 +67,16 @@ The library also provide an abstract base class on which to built I/O implementa
 Changelog
 ---------
 
+1.1.0
+`````
+
+* Rework pytest plugin
+
+1.0.0
+`````
+
+* Add support for block-type slack actions
+
 0.7.0
 `````
 
