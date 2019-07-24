@@ -6,37 +6,39 @@ from . import data
 
 
 class TestActions:
-    def test_from_http(self, action):
-        act = Action.from_http(action)
+    def test_from_http(self, slack_action):
+        act = Action.from_http(slack_action)
         assert isinstance(act, slack.actions.Action)
 
-    def test_parsing_token(self, action):
-        slack.actions.Action.from_http(action, verification_token="supersecuretoken")
+    def test_parsing_token(self, slack_action):
+        slack.actions.Action.from_http(
+            slack_action, verification_token="supersecuretoken"
+        )
 
-    def test_parsing_team_id(self, action):
-        slack.actions.Action.from_http(action, team_id="T000AAA0A")
+    def test_parsing_team_id(self, slack_action):
+        slack.actions.Action.from_http(slack_action, team_id="T000AAA0A")
 
-    def test_parsing_wrong_token(self, action):
+    def test_parsing_wrong_token(self, slack_action):
         with pytest.raises(slack.exceptions.FailedVerification):
-            slack.actions.Action.from_http(action, verification_token="xxx")
+            slack.actions.Action.from_http(slack_action, verification_token="xxx")
 
-    def test_parsing_wrong_team_id(self, action):
+    def test_parsing_wrong_team_id(self, slack_action):
         with pytest.raises(slack.exceptions.FailedVerification):
-            slack.actions.Action.from_http(action, team_id="xxx")
+            slack.actions.Action.from_http(slack_action, team_id="xxx")
 
-    def test_mapping_access(self, action):
-        act = Action.from_http(action)
+    def test_mapping_access(self, slack_action):
+        act = Action.from_http(slack_action)
         assert act["callback_id"] == "test_action"
 
-    def test_mapping_delete(self, action):
-        act = Action.from_http(action)
+    def test_mapping_delete(self, slack_action):
+        act = Action.from_http(slack_action)
         assert act["callback_id"] == "test_action"
         del act["callback_id"]
         with pytest.raises(KeyError):
             print(act["callback_id"])
 
-    def test_mapping_set(self, action):
-        act = Action.from_http(action)
+    def test_mapping_set(self, slack_action):
+        act = Action.from_http(slack_action)
         assert act["callback_id"] == "test_action"
         act["callback_id"] = "foo"
         assert act["callback_id"] == "foo"
@@ -124,11 +126,11 @@ class TestActionRouter:
         assert len(action_router._routes["test_action"]["*"]) == 1
         assert action_router._routes["test_action"]["*"][0] is handler
 
-    def test_dispath(self, action, action_router):
+    def test_dispath(self, slack_action, action_router):
         def handler():
             pass
 
-        act = Action.from_http(action)
+        act = Action.from_http(slack_action)
         action_router.register("test_action", handler)
 
         handlers = list()
@@ -137,22 +139,22 @@ class TestActionRouter:
         assert len(handlers) == 1
         assert handlers[0] is handler
 
-    def test_no_dispatch(self, action, action_router):
+    def test_no_dispatch(self, slack_action, action_router):
         def handler():
             pass
 
-        act = Action.from_http(action)
+        act = Action.from_http(slack_action)
         action_router.register("xxx", handler)
 
         for h in action_router.dispatch(act):
             assert False
 
     @pytest.fixture(params={**data.InteractiveMessage.__members__})
-    def test_dispatch_details(self, action, action_router):
+    def test_dispatch_details(self, slack_action, action_router):
         def handler():
             pass
 
-        act = Action.from_http(action)
+        act = Action.from_http(slack_action)
         action_router.register("test_action", handler, name="ok")
         action_router.register("test_action", handler, name="cancel")
 
@@ -162,11 +164,13 @@ class TestActionRouter:
         assert len(handlers) == 1
         assert handlers[0] is handler
 
-    def test_dispatch_action_specific_registration_methods(self, action, action_router):
+    def test_dispatch_action_specific_registration_methods(
+        self, slack_action, action_router
+    ):
         def handler():
             pass
 
-        act = Action.from_http(action)
+        act = Action.from_http(slack_action)
 
         if act["type"] in ("interactive_message", "message_action"):
             action_router.register_interactive_message("test_action", handler)
@@ -210,14 +214,14 @@ class TestActionRouter:
         assert len(handlers) == 1
         assert handlers[0] is handler
 
-    def test_multiple_dispatch(self, action, action_router):
+    def test_multiple_dispatch(self, slack_action, action_router):
         def handler():
             pass
 
         def handler_bis():
             pass
 
-        act = Action.from_http(action)
+        act = Action.from_http(slack_action)
         action_router.register("test_action", handler)
         action_router.register("test_action", handler_bis)
 
