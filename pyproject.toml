@@ -15,7 +15,7 @@ websocket-client = {version = "^0.54.0",optional = true}
 aiohttp = {version = "^3.4",optional = true}
 curio = {version = "^0.9.0",optional = true}
 asks = {version = "^2.2",optional = true}
-trio = {version = "^0.9.0",optional = true}
+trio = {version = "^0.11.0",optional = true}
  
 [tool.poetry.dev-dependencies]
 flake8 = "^3.6"

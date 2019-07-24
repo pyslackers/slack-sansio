@@ -434,8 +434,6 @@ class TestAiohttp:
 
 class TestTrio:
     def test_sleep(self, token):
-        asks.init("trio")
-
         async def test_function():
             delay = 1
             start = datetime.datetime.now()
@@ -452,8 +450,6 @@ class TestTrio:
         assert trio.run(test_function)
 
     def test__request(self, token):
-        asks.init("trio")
-
         async def test_function():
             session = asks.Session()
             client = SlackAPITrio(session=session, token=token)
@@ -467,8 +463,6 @@ class TestTrio:
 
 class TestCurio:
     def test_sleep(self, token):
-        asks.init("curio")
-
         async def test_function():
             delay = 1
             start = datetime.datetime.now()
@@ -485,8 +479,6 @@ class TestCurio:
         assert curio.run(test_function)
 
     def test__request(self, token):
-        asks.init("curio")
-
         async def test_function():
             session = asks.Session()
             client = SlackAPICurio(session=session, token=token)

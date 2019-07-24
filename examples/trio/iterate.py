@@ -11,8 +11,6 @@ from slack.io.curio import SlackAPI
 logging.basicConfig(level=logging.INFO)
 LOG = logging.getLogger(__name__)
 
-asks.init("trio")
-
 
 async def iterate(client):
 
