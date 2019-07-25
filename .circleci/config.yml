@@ -1,0 +1,81 @@
+version: 2
+
+workflows:
+  version: 2
+  test_and_deploy:
+    jobs:
+      - test-3.7
+      - test-3.6
+      - lint
+      - docs
+      - pypi:
+          requires:
+            - test-3.7
+            - test-3.6
+            - lint
+            - docs
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
+
+jobs:
+  test-3.7: &test-template
+    docker:
+      - image: circleci/python:3.7.3
+    environment:
+      TOXENV: py37
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - venv-{{ checksum "poetry.lock" }}
+            - venv-
+      - restore_cache:
+          keys:
+            - tox-{{ checksum "poetry.lock" }}
+            - tox-
+      - run: |
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install -U poetry tox
+      - save_cache:
+          key: 'venv-{{ checksum "poetry.lock" }}'
+          paths:
+            - .venv
+      - run: |
+          source .venv/bin/activate
+          tox
+      - save_cache:
+          key: 'tox-{{ checksum "poetry.lock" }}'
+          paths:
+            - .tox
+            - .mypy_cache
+      - store_test_results:
+          path: .tox/py37/artifacts/
+  test-3.6:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.6.8
+    environment:
+      TOXENV: py36
+  lint:
+    <<: *test-template
+    environment:
+      TOXENV: lint
+  docs:
+    <<: *test-template
+    environment:
+      TOXENV: docs
+  pypi:
+    docker:
+      - image: circleci/python:3.7.3
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - venv-{{ checksum "poetry.lock" }}
+            - venv-
+      - run: |
+          poetry publish --username Ovv --password $PYPI_PASS --build
