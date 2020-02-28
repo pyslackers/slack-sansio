@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "slack-sansio"
-version = "1.1.0"
+version = "1.2.0"
 description = "Python (a)sync Slack API library"
 authors = ["Ovv <contact@ovv.wtf>"]
 license = "MIT"
