@@ -4,7 +4,6 @@ from typing import Tuple, Union, Optional, AsyncIterator, MutableMapping
 import aiohttp
 
 from . import abc
-from .. import methods
 
 
 class SlackAPI(abc.SlackAPI):

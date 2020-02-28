@@ -67,6 +67,14 @@ The library also provide an abstract base class on which to built I/O implementa
 Changelog
 ---------
 
+1.2.0
+`````
+
+* Parse `app_mention` events as `Message`
+* Add `Message.mention` property
+* Run tests on python 3.8
+* Use namedtuple for methods
+
 1.1.0
 `````
 

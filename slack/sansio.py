@@ -6,12 +6,12 @@ import cgi
 import hmac
 import json
 import time
-import base64
 import hashlib
 import logging
 from typing import Tuple, Union, Optional, MutableMapping
 
-from . import HOOK_URL, ROOT_URL, events, methods, exceptions
+from . import HOOK_URL, ROOT_URL, events, exceptions
+from .methods import Methods, method
 
 LOG = logging.getLogger(__name__)
 
@@ -125,7 +125,7 @@ def parse_content_type(headers: MutableMapping) -> Tuple[Optional[str], str]:
 
 
 def prepare_request(
-    url: Union[str, methods],
+    url: Union[str, Methods],
     data: Optional[MutableMapping],
     headers: Optional[MutableMapping],
     global_headers: MutableMapping,
@@ -148,9 +148,9 @@ def prepare_request(
         :py:class:`tuple` (url, body, headers)
     """
 
-    if isinstance(url, methods):
-        as_json = as_json or url.value[3]
-        real_url = url.value[0]
+    if isinstance(url, Methods):
+        as_json = as_json or url.value.as_json
+        real_url = url.value.url
     else:
         real_url = url
         as_json = False
@@ -220,7 +220,7 @@ def decode_response(status: int, headers: MutableMapping, body: bytes) -> dict:
 
 
 def find_iteration(
-    url: Union[methods, str],
+    url: Union[Methods, str],
     itermode: Optional[str] = None,
     iterkey: Optional[str] = None,
 ) -> Tuple[str, str]:
@@ -235,11 +235,11 @@ def find_iteration(
     Returns:
         :py:class:`tuple` (itermode, iterkey)
     """
-    if isinstance(url, methods):
+    if isinstance(url, Methods):
         if not itermode:
-            itermode = url.value[1]
+            itermode = url.value.itermode
         if not iterkey:
-            iterkey = url.value[2]
+            iterkey = url.value.iterkey
 
     if not iterkey or not itermode:
         raise ValueError("Iteration not supported for: {}".format(url))
@@ -250,7 +250,7 @@ def find_iteration(
 
 
 def prepare_iter_request(
-    url: Union[methods, str],
+    url: Union[Methods, str],
     data: MutableMapping,
     *,
     iterkey: Optional[str] = None,

@@ -66,6 +66,24 @@ REACTION_ADDED = {
     "event_time": 123456789,
 }
 
+APP_MENTION = {
+    "token": "supersecuretoken",
+    "team_id": "T000AAA0A",
+    "api_app_id": "A0AAAAAAA",
+    "event": {
+        "type": "app_mention",
+        "user": "U000AA000",
+        "text": "<@U0LAN0Z89> hello world",
+        "ts": "123456789.000001",
+        "channel": "C00000A00",
+        "event_ts": "123456789.000001",
+    },
+    "type": "event_callback",
+    "authed_teams": ["T000AAA0A"],
+    "event_id": "AAAAAAA",
+    "event_time": 123456789,
+}
+
 MESSAGE_SIMPLE = {
     "token": "supersecuretoken",
     "team_id": "T000AAA0A",
@@ -77,6 +95,25 @@ MESSAGE_SIMPLE = {
         "ts": "123456789.000001",
         "channel": "C00000A00",
         "event_ts": "123456789.000001",
+    },
+    "type": "event_callback",
+    "authed_teams": ["T000AAA0A"],
+    "event_id": "AAAAAAA",
+    "event_time": 123456789,
+}
+
+MESSAGE_DM = {
+    "token": "supersecuretoken",
+    "team_id": "T000AAA0A",
+    "api_app_id": "A0AAAAAAA",
+    "event": {
+        "type": "message",
+        "user": "U000AA000",
+        "text": "hello world",
+        "ts": "123456789.000001",
+        "channel": "C00000A00",
+        "event_ts": "123456789.000001",
+        "channel_type": "im",
     },
     "type": "event_callback",
     "authed_teams": ["T000AAA0A"],
@@ -443,6 +480,8 @@ class Messages(Enum):
         - mention
         - none_text
         - channel_topic
+        - app_mention
+        - dm
 
     """
 
@@ -457,3 +496,5 @@ class Messages(Enum):
     edit_threaded = MESSAGE_EDIT_THREADED
     mention = MESSAGE_MENTION
     channel_topic = MESSAGE_CHANNEL_TOPIC
+    app_mention = APP_MENTION
+    dm = MESSAGE_DM

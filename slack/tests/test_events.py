@@ -176,6 +176,16 @@ class TestMessage:
         else:
             assert rep == {"channel": "C00000A00"}
 
+    @pytest.mark.parametrize("slack_message", ["simple", "threaded"], indirect=True)
+    def test_message_no_mention(self, slack_message):
+        msg = Event.from_http(slack_message)
+        assert msg.mention == False
+
+    @pytest.mark.parametrize("slack_message", ["app_mention", "dm"], indirect=True)
+    def test_message_mention(self, slack_message):
+        msg = Event.from_http(slack_message)
+        assert msg.mention == True
+
 
 class TestEventRouter:
     def test_register(self, event_router):

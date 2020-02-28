@@ -68,7 +68,10 @@ class Event(MutableMapping):
         Returns:
             :class:`slack.events.Event` or :class:`slack.events.Message`
         """
-        if raw_event["type"].startswith("message"):
+        if (
+            raw_event["type"].startswith("message")
+            or raw_event["type"] == "app_mention"
+        ):
             return Message(raw_event)
         else:
             return Event(raw_event)
@@ -103,7 +106,10 @@ class Event(MutableMapping):
         if team_id and raw_body["team_id"] != team_id:
             raise exceptions.FailedVerification(raw_body["token"], raw_body["team_id"])
 
-        if raw_body["event"]["type"].startswith("message"):
+        if (
+            raw_body["event"]["type"].startswith("message")
+            or raw_body["event"]["type"] == "app_mention"
+        ):
             return Message(raw_body["event"], metadata=raw_body)
         else:
             return Event(raw_body["event"], metadata=raw_body)
@@ -122,6 +128,15 @@ class Message(Event):
         if not msg:
             msg = {}
         super().__init__(msg, metadata)
+
+    @property
+    def mention(self) -> bool:
+        if self["type"] == "app_mention":
+            return True
+        if self.get("channel_type") == "im":
+            return True
+
+        return False
 
     def __repr__(self) -> str:
         return "Slack Message: " + str(self.event)
