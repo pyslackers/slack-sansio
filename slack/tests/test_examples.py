@@ -19,7 +19,7 @@ def test_events(slack_event):
     "slack_event", {**slack.tests.data.Messages.__members__}, indirect=True
 )
 def test_messages(slack_event):
-    assert slack_event["event"]["type"] == "message"
+    assert slack_event["event"]["type"] in ("message", "app_mention")
 
 
 # END: TEST MESSAGES
