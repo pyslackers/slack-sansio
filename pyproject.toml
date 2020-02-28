@@ -15,7 +15,7 @@ websocket-client = {version = "^0.54.0",optional = true}
 aiohttp = {version = "^3.4",optional = true}
 curio = {version = "^0.9.0",optional = true}
 asks = {version = "^2.2",optional = true}
-trio = {version = "^0.11.0",optional = true}
+trio = {version = "^0.13.0",optional = true}
  
 [tool.poetry.dev-dependencies]
 flake8 = "^3.6"
@@ -30,7 +30,7 @@ pytest-coverage = "^0.0.0"
 pytest-asyncio = "^0.10.0"
 asynctest = "^0.12.2"
 mock = "^2.0"
-mypy = "^0.641.0"
+mypy = "^0.761"
 
 [tool.poetry.extras]
 requests = ["requests", "websocket-client"]

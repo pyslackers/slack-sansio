@@ -4,12 +4,14 @@ workflows:
   version: 2
   test_and_deploy:
     jobs:
+      - test-3.8
       - test-3.7
       - test-3.6
       - lint
       - docs
       - pypi:
           requires:
+            - test-3.8
             - test-3.7
             - test-3.6
             - lint
@@ -21,11 +23,11 @@ workflows:
               ignore: /.*/
 
 jobs:
-  test-3.7: &test-template
+  test-3.8: &test-template
     docker:
-      - image: circleci/python:3.7.3
+      - image: circleci/python:3.8
     environment:
-      TOXENV: py37
+      TOXENV: py38
     steps:
       - checkout
       - restore_cache:
@@ -54,10 +56,16 @@ jobs:
             - .mypy_cache
       - store_test_results:
           path: .tox/py37/artifacts/
+  test-3.7:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.7
+    environment:
+      TOXENV: py37
   test-3.6:
     <<: *test-template
     docker:
-      - image: circleci/python:3.6.8
+      - image: circleci/python:3.6
     environment:
       TOXENV: py36
   lint:
@@ -70,7 +78,7 @@ jobs:
       TOXENV: docs
   pypi:
     docker:
-      - image: circleci/python:3.7.3
+      - image: circleci/python:3.8
     steps:
       - checkout
       - restore_cache:
