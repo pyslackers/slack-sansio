@@ -7,8 +7,6 @@ import pytest
 from slack import sansio, methods, exceptions
 from slack.events import Event
 
-from . import data
-
 
 class TestRequest:
     def test_prepare_request(self, token):
