@@ -3,7 +3,7 @@ import copy
 import json
 import logging
 import itertools
-from typing import Any, Dict, Iterator, Optional, MutableMapping
+from typing import Any, Dict, Iterator, Optional
 from collections import defaultdict
 from collections.abc import MutableMapping
 
